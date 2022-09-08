@@ -1,0 +1,204 @@
+*
+{
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+@font-face {
+    font-family: ds-digital;
+    src: url(fonts/Ds-Digital.ttf);
+}
+@font-face {
+    font-family: ericsson;
+    src: url(fonts/Ericsson.ttf);
+}
+body {
+	display: flex;
+    position:relative;
+	justify-content: center;
+	align-items: center;
+	min-height: 100vh;
+	background: #ffffff;
+    font-family: consolas;
+    
+}
+.calculadora {
+    display:flex;
+    flex-direction: column;
+    align-items: center;
+	position: relative;
+	padding: 20px;
+    width:300px;
+	border-radius: 20px;
+    background-image: url("img/textura.jpg");
+    background-repeat: no-repeat;
+    background-position: top center;
+    background-color: #cfcfcf; 
+    border-left: 5px solid #696768;
+    border-right: 5px solid #696768;
+    border-top: 2px solid #696768;
+    border-bottom: 2px solid #696768;
+	box-shadow: inset 0px 60px 8px -50px rgba(100, 100, 100, 0.9),
+    inset 0px -56px 8px -50px rgba(255, 255, 255, 0.7),
+    inset 0px -70px 8px -50px rgba(100, 100, 100, 0.8);
+}
+.calculadora::before{
+    content:"";
+    position:absolute;
+    width:100%;
+    left:0px;
+    top:15px;
+    height:1px;
+    background-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0px 0px 5px 2px rgba(255, 255, 255, 0.7);
+}
+.calculadora::after{
+    content:"";
+    position:absolute;
+    width:100%;
+    left:0px;
+    bottom:25px;
+    height:1px;
+    background-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0px 0px 5px 2px rgba(255, 255, 255, 0.5);
+}
+.logotipo{
+    display:grid;
+    width:100%;
+    font-weight: bold;
+    grid-template-columns: 1fr 1fr 1fr;
+    margin:10px 0px;
+    justify-content: space-between;
+    justify-items: center;
+    align-items: center;
+}
+.logotipo span{
+    text-shadow: #ffffff .8px .8px .5px;
+}
+.fotocelda{
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap:2px;
+    height: 30px;
+    padding:2px;
+    background-color:#1f1511;
+    border-radius: 3px;
+    box-shadow: 1.5px 1.5px 1px .5px #FFFFFF;
+}
+.celda{
+    background-color: #3E2D25;
+}
+.pantalla{
+    background-color: #c2e0e0;
+    width:100%;
+    height:75px;
+    padding:5px;
+    margin-bottom:60px;
+    border: 5px inset #DFDDDC;
+}
+.pantalla #formula{
+    font-family: ericsson;
+    font-size: 1.2rem;
+}
+.pantalla #resultado{
+    font-family: ds-digital;
+    font-size: 2.2rem;
+    display: flex;
+    position:relative;
+    justify-content: flex-end;
+}
+/* #resultado::before{
+    position:absolute;
+    content:"8888888888";
+    opacity: .15;
+} */
+.separador{
+    position: absolute;
+    top:170px;
+    left:0px;
+    width:100%;
+    height:5px;
+    border-top: 1px solid #464646;
+    border-bottom: 1px solid #464646;
+    background-color: #696768;
+}
+
+.botones {
+	position: relative;
+    font-weight: bold;
+    margin-bottom:30px;
+    display: grid; 
+    grid-template-columns: repeat(4,50px); 
+    grid-template-rows: repeat(5,40px); 
+    gap: 10px 10px; 
+    grid-template-areas: 
+        "tecla_ac tecla_c division multiplicacion"
+        "tecla_7 tecla_8 tecla_9 suma"
+        "tecla_4 tecla_5 tecla_6 resta"
+        "tecla_1 tecla_2 tecla_3 igual"
+        "tecla_0 punto ans igual";
+}
+
+.igual { grid-area: igual; }
+.ans { grid-area: ans; }
+.punto { grid-area: punto; }
+.tecla_0 { grid-area: tecla_0; }
+.tecla_ac { grid-area: tecla_ac; }
+.tecla_c { grid-area: tecla_c; }
+.division { grid-area: division; }
+.multiplicacion { grid-area: multiplicacion; }
+.tecla_7 { grid-area: tecla_7; }
+.tecla_8 { grid-area: tecla_8; }
+.tecla_9 { grid-area: tecla_9; }
+.suma { grid-area: suma; }
+.tecla_4 { grid-area: tecla_4; }
+.tecla_5 { grid-area: tecla_5; }
+.tecla_6 { grid-area: tecla_6; }
+.resta { grid-area: resta; }
+.tecla_1 { grid-area: tecla_1; }
+.tecla_2 { grid-area: tecla_2; }
+.tecla_3 { grid-area: tecla_3; }
+
+.botones div{
+    display:flex;
+    justify-content: center;
+    align-items: center;
+    border:1px solid rgb(61, 61, 61);
+    border-radius: 5px;
+    background-color: #919191;
+}
+.botones span{
+    display:flex;
+    justify-content: center;
+    align-items: center;
+    width:44px;
+    height:34px;
+    font-size: 1.2rem;
+    border:1px solid rgb(14, 14, 14);
+    border-radius:5px;
+    background-color: #a39588;
+    box-shadow: inset 2px 2px 3px -2px rgba(255,255,255,0.9), 
+                inset -3px -3px 3px -2px rgba(0,0,0,0.9), 
+                2px 3px 4px -1px rgba(0,0,0,0.7);
+    text-shadow: #ffffff .8px .8px 1px;
+    cursor: pointer;
+    user-select: none;
+}
+.igual span{
+    height:84px;
+    background-color:rgb(65, 163, 255)
+}
+.tecla_ac span, .tecla_c span{
+    background-color: rgb(204, 58, 58);
+    text-shadow: #ffffffb6 .5px .5px 1px;
+}
+.botones span:active{
+    box-shadow: inset 3px 3px 3px -2px rgba(34, 34, 34, 0.9),
+    inset -3px -3px 3px -2px rgba(34,34,34,0.9);
+}
+.credito{
+    position:absolute;
+    bottom:10px;
+    left:10px;
+}
