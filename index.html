@@ -5,6 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="style.css">
+    
     <title>Calculadora - HTML/CSS/JAVASCRIPT</title>
 </head>
 <body>
@@ -19,33 +20,35 @@
             <span>MS-123</span>
         </div>
         <div class="pantalla">
-            <div id="formula">125x23</div>
-            <div id="resultado">2875</div>
+            <div>
+                <p id="formula"></p><span id="blink">_</span>
+            </div>
+            <div id="resultado">0</div>
         </div>
         <div class="separador"></div>
-        <div class="botones">
-            <div class="tecla_0"><span>0</span></div>
-            <div class="tecla_1"><span>1</span></div>
-            <div class="tecla_2"><span>2</span></div>
-            <div class="tecla_3"><span>3</span></div>
-            <div class="tecla_4"><span>4</span></div>
-            <div class="tecla_5"><span>5</span></div>
-            <div class="tecla_6"><span>6</span></div>
-            <div class="tecla_7"><span>7</span></div>
-            <div class="tecla_8"><span>8</span></div>
-            <div class="tecla_9"><span>9</span></div>
-            <div class="punto"><span>&middot;</span></div>
-            <div class="multiplicacion"><span>X</span></div>
-            <div class="division"><span>&divide;</span></div>
-            <div class="suma"><span>+</span></div>
-            <div class="resta"><span>-</span></div>
-            <div class="ans"><span>ANS</span></div>
-            <div class="tecla_c"><span>C</span></div>
-            <div class="tecla_ac"><span>AC</span></div>
-            <div class="igual"><span>=</span></div>  
+        <div class="teclado">
+            <div class="tecla_0"><button name="numero">0</button></div>
+            <div class="tecla_1"><button name="numero">1</button></div>
+            <div class="tecla_2"><button name="numero">2</button></div>
+            <div class="tecla_3"><button name="numero">3</button></div>
+            <div class="tecla_4"><button name="numero">4</button></div>
+            <div class="tecla_5"><button name="numero">5</button></div>
+            <div class="tecla_6"><button name="numero">6</button></div>
+            <div class="tecla_7"><button name="numero">7</button></div>
+            <div class="tecla_8"><button name="numero">8</button></div>
+            <div class="tecla_9"><button name="numero">9</button></div>
+            <div class="punto"><button name="operador" data-valor=".">·</button></div>
+            <div class="multiplicacion"><button name="operador">×</button></div>
+            <div class="division"><button name="operador">÷</button></div>
+            <div class="suma"><button name="operador">+</button></div>
+            <div class="resta"><button name="operador" data-valor="-">−</button></div>
+            <div class="ans"><button>ANS</button></div>
+            <div class="tecla_c"><button id="eliminar">C</button></div>
+            <div class="tecla_ac"><button id="reset">AC</button></div>
+            <div class="igual"><button id="operar">=</button></div>  
         </div>
     </div>
     <div class="credito">Practicas Html/Css/Javascript - E.Medina</div>
-    
+    <script src="script.js"></script>
 </body>
 </html>
