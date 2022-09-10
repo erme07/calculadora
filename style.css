@@ -97,7 +97,7 @@ body {
     margin-bottom:60px;
     border: 5px inset #DFDDDC;
 }
-#formula, #blink{
+#formula, #blink, #Ans, #formul{
     font-family: ericsson;
     font-size: 1.2rem;
     display: inline;
@@ -119,11 +119,16 @@ body {
     position:relative;
     justify-content: flex-end;
 }
-/* #resultado::before{
+#resultado::before{
     position:absolute;
-    content:"8888888888";
-    opacity: .15;
-} */
+    content:"8.8.8.8.8.8.8.8.8.8.8.8.";
+    opacity: .06;
+}
+#formul::before{
+    position:absolute;
+    content:"&&&&&&&&&&&&&&&&&&&";
+    opacity: .06;
+}
 .separador{
     position: absolute;
     top:170px;
