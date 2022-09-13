@@ -20,10 +20,21 @@
             <span>MS-123</span>
         </div>
         <div class="pantalla">
-            <div id="formul">
-                <span id="Ans"></span><p id="formula"></p><span id="blink">_</span>
+            <div class="lineaSup">
+                <div class="indicadorIzq"><span class="flechaIzq">ï</span></div>
+                <div class="contenedorFormula">
+                    <span class="Ans"></span><p class="formula"></p><span class="blink">_</span>
+                </div>
+                <div class="indicadorDer">
+                    <span class="flechaUp">ä</span><span class="flechaDown">ë</span><span class="flechaRight">ö</span>
+                </div>
             </div>
-            <div id="resultado">0</div>
+            <div class="lineaInf">
+                <div id="resultado">0</div>
+                <div class="notacionExpo">
+                    <span class="exponente">-88</span><span class="base">x10</span>
+                </div>
+            </div>
         </div>
         <div class="separador"></div>
         <div class="teclado">
@@ -42,13 +53,13 @@
             <div class="division"><button name="operador">÷</button></div>
             <div class="suma"><button name="operador">+</button></div>
             <div class="resta"><button name="operador" data-valor="-">−</button></div>
-            <div class="ans"><button name="operador" id="agregar">ANS</button></div>
+            <div class="ans"><button name="operador">ANS</button></div>
             <div class="tecla_c"><button id="eliminar">C</button></div>
             <div class="tecla_ac"><button id="reset">AC</button></div>
             <div class="igual"><button id="operar">=</button></div>  
         </div>
     </div>
-    <div class="credito">Practicas Html/Css/Javascript - E.Medina</div>
+    <div class="credito">Practicas Html/CSS/Javascript - Erik Medina</div>
     <script src="script.js"></script>
 </body>
 </html>

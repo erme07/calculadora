@@ -19,7 +19,7 @@ body {
 	align-items: center;
 	min-height: 100vh;
 	background: #ffffff;
-    font-family: consolas;
+    /* font-family: consolas; */
     
 }
 .calculadora {
@@ -91,19 +91,26 @@ body {
 }
 .pantalla{
     background-color: #c2e0e0;
-    width:100%;
-    height:75px;
-    padding:5px;
+    width:225px;
+    height:65px;
+    padding:5px 0px;
     margin-bottom:60px;
     border: 5px inset #DFDDDC;
 }
-#formula, #blink, #Ans, #formul{
+.formula, .blink, .Ans, .contenedorFormula{
     font-family: ericsson;
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     display: inline;
 }
-
-#blink{
+.formula{
+    overflow: hidden;
+    margin-left:.8px;
+}
+.desplazar{
+    display: flex;
+    justify-content: flex-end;
+}
+.blink{
     animation: parpadeo 1s linear infinite;
 }
 @keyframes parpadeo{
@@ -114,20 +121,85 @@ body {
     }
 .pantalla #resultado{
     font-family: ds-digital;
-    font-size: 2.2rem;
+    font-size: 2rem;
+    line-height: 1.8rem;
     display: flex;
     position:relative;
     justify-content: flex-end;
 }
 #resultado::before{
     position:absolute;
-    content:"8.8.8.8.8.8.8.8.8.8.8.8.";
+    content:"-8.8.8.8.8.8.8.8.8.8";
     opacity: .06;
 }
-#formul::before{
+.indicadorIzq, .indicadorDer{
+    font-family: ericsson;
+    font-size: .9rem;
+    position: relative;
+    display: flex;
+    justify-content: center;
+}
+
+.flechaUp, .flechaDown, .flechaRight, .flechaIzq{
+    position: absolute;
+}
+.flechaUp{
+    top:-8px;
+    opacity:.1;
+}
+.flechaRight, .flechaIzq{
+    bottom:1px;
+    opacity:.1;
+}
+.flechaDown{
+    top:1px;
+    opacity:.1;
+}
+
+.lineaSup{
+    display:grid;
+    grid-template-columns: 15px 1fr 15px;
+    height:20px;
+    grid-gap: 3px;
+}
+.lineaInf{
+    display: grid;
+    grid-template-columns: 1fr 30px;
+}
+.contenedorFormula{
+    position:relative;
+    overflow: hidden;
+    display: flex;
+}
+.contenedorFormula::before{
     position:absolute;
-    content:"&&&&&&&&&&&&&&&&&&&";
+    content:"&&&&&&&&&&&&&&";
+    left:1px;
     opacity: .06;
+}
+
+.notacionExpo{
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 12px;
+    align-items: end;
+    padding-left: 4px;
+}
+.base{
+    font-size: 9px;
+    opacity:.1;
+    padding-bottom: 2px;
+    /* font-weight: bold; */
+}
+.exponente{
+    font-size: 14px;
+    font-family: ds-digital;
+    opacity:.1;
+    padding-right: 5px;
+    text-align: right;
+}
+.mostrar{
+    opacity:1;
 }
 .separador{
     position: absolute;
@@ -142,6 +214,7 @@ body {
 
 .teclado {
 	position: relative;
+    font-family: console;
     font-weight: bold;
     margin-bottom:30px;
     display: grid; 
