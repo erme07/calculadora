@@ -1,5 +1,5 @@
 # Calculadora
-Pequeña calculadora que realiza operaciones basicas.
+Pequeña calculadora que realiza operaciones basicas emulando una calculadora convencional
 Este pequeño proyecto forma parte de mis practicas de desarrollo con html, css y javascript.
 
 Small calculator that performs basic operations.
