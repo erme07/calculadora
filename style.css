@@ -1,5 +1,4 @@
-*
-{
+*{
 	margin: 0;
 	padding: 0;
 	box-sizing: border-box;
@@ -12,15 +11,18 @@
     font-family: ericsson;
     src: url(fonts/Ericsson.ttf);
 }
+@font-face {
+    font-family: eurostar;
+    src: url(fonts/Eurostarblack.ttf);
+}
 body {
 	display: flex;
     position:relative;
 	justify-content: center;
 	align-items: center;
 	min-height: 100vh;
-	background: #ffffff;
-    /* font-family: consolas; */
-    
+    background: rgb(133,106,5);
+    background: radial-gradient(circle, rgba(133,106,5,1) 0%, rgba(120,66,4,1) 39%, rgba(60,32,1,1) 100%);
 }
 .calculadora {
     display:flex;
@@ -30,15 +32,15 @@ body {
 	padding: 20px;
     width:300px;
 	border-radius: 20px;
-    background-image: url("img/textura.jpg");
+    /* background-image: url("img/textura.jpg");
     background-repeat: no-repeat;
-    background-position: top center;
+    background-position: top center; */
     background-color: #cfcfcf; 
     border-left: 5px solid #696768;
     border-right: 5px solid #696768;
     border-top: 2px solid #696768;
     border-bottom: 2px solid #696768;
-	box-shadow: inset 0px 60px 8px -50px rgba(100, 100, 100, 0.9),
+	box-shadow: 15px 10px 25px 0px rgb(0 0 0 / 70%),inset 0px 60px 8px -50px rgba(100, 100, 100, 0.9),
     inset 0px -56px 8px -50px rgba(255, 255, 255, 0.7),
     inset 0px -70px 8px -50px rgba(100, 100, 100, 0.8);
 }
@@ -75,19 +77,28 @@ body {
 .logotipo span{
     text-shadow: #ffffff .8px .8px .5px;
 }
+.marca{
+    font-family: eurostar;
+    font-size: 14px;
+}
+
 .fotocelda{
     width: 100%;
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap:2px;
+    display:flex;
+    align-content: center;
+    align-items: center;
+    justify-content: space-evenly;
     height: 30px;
-    padding:2px;
-    background-color:#1f1511;
+    border: 2px solid #1f1511;
+    background-color: #3E2D25;
     border-radius: 3px;
     box-shadow: 1.5px 1.5px 1px .5px #FFFFFF;
 }
-.celda{
-    background-color: #3E2D25;
+.fotocelda::before, .fotocelda::after{
+    content:'';
+    height:100%;
+    width:2px;
+    background-color: #1f1511;
 }
 .pantalla{
     background-color: #c2e0e0;
@@ -97,7 +108,7 @@ body {
     margin-bottom:60px;
     border: 5px inset #DFDDDC;
 }
-.formula, .blink, .Ans, .contenedorFormula{
+.formula, .blink, .contenedorFormula{
     font-family: ericsson;
     font-size: 1.3rem;
     display: inline;
@@ -120,6 +131,7 @@ body {
     100%{opacity: 1;}
     }
 .pantalla #resultado{
+    --opacityValue: .06;
     font-family: ds-digital;
     font-size: 2rem;
     line-height: 1.8rem;
@@ -130,7 +142,7 @@ body {
 #resultado::before{
     position:absolute;
     content:"-8.8.8.8.8.8.8.8.8.8";
-    opacity: .06;
+    opacity: var(--opacityValue);
 }
 .indicadorIzq, .indicadorDer{
     font-family: ericsson;
@@ -142,18 +154,16 @@ body {
 
 .flechaUp, .flechaDown, .flechaRight, .flechaIzq{
     position: absolute;
+    opacity:.1;
 }
 .flechaUp{
     top:-8px;
-    opacity:.1;
 }
 .flechaRight, .flechaIzq{
     bottom:1px;
-    opacity:.1;
 }
 .flechaDown{
     top:1px;
-    opacity:.1;
 }
 
 .lineaSup{
@@ -167,6 +177,7 @@ body {
     grid-template-columns: 1fr 30px;
 }
 .contenedorFormula{
+    --opacityValue2:.06;
     position:relative;
     overflow: hidden;
     display: flex;
@@ -175,7 +186,7 @@ body {
     position:absolute;
     content:"&&&&&&&&&&&&&&";
     left:1px;
-    opacity: .06;
+    opacity: var(--opacityValue2);
 }
 
 .notacionExpo{
@@ -187,21 +198,33 @@ body {
 }
 .base{
     font-size: 9px;
+    font-family: sans-serif;
     opacity:.1;
     padding-bottom: 2px;
-    /* font-weight: bold; */
+    font-weight: bold;
 }
+
 .exponente{
     font-size: 14px;
     font-family: ds-digital;
-    opacity:.1;
-    padding-right: 5px;
+    font-weight: bold;
+    height:100%;
+    width:100%;
+    position: relative;
+    padding-right: 4px;
+    padding-top: 3px;
     text-align: right;
+    --opacityValue2:.1;
 }
-.mostrar{
-    opacity:1;
+
+ .exponente::before{
+    content: '-88';
+    font-size: 14px;
+    position: absolute;
+    right: 4px;
+    opacity: var(--opacityValue2);
 }
-.separador{
+.divisor{
     position: absolute;
     top:170px;
     left:0px;
@@ -219,16 +242,20 @@ body {
     margin-bottom:30px;
     display: grid; 
     grid-template-columns: repeat(4,50px); 
-    grid-template-rows: repeat(5,40px); 
+    grid-template-rows: repeat(7,35px); 
     gap: 10px 10px; 
     grid-template-areas: 
+        "tecla_off direccional direccional tecla_on"
+        "abrir_parent direccional direccional cerrar_parent"
         "tecla_ac tecla_c division multiplicacion"
         "tecla_7 tecla_8 tecla_9 suma"
         "tecla_4 tecla_5 tecla_6 resta"
         "tecla_1 tecla_2 tecla_3 igual"
         "tecla_0 punto ans igual";
 }
-
+.tecla_off {grid-area: tecla_off;}
+.tecla_on {grid-area: tecla_on;}
+.direccional {grid-area: direccional;}
 .igual { grid-area: igual; }
 .ans { grid-area: ans; }
 .punto { grid-area: punto; }
@@ -249,7 +276,7 @@ body {
 .tecla_2 { grid-area: tecla_2; }
 .tecla_3 { grid-area: tecla_3; }
 
-.teclado div{
+.teclado > div{
     display:flex;
     justify-content: center;
     align-items: center;
@@ -257,16 +284,18 @@ body {
     border-radius: 5px;
     background-color: #919191;
 }
-.teclado button{
+
+[data-tipo="numero"], [data-tipo="operador"], button#operar, button#reset, button#eliminar,
+.tecla_off button, .tecla_on button, .abrir_parent button, .cerrar_parent button {
     display:flex;
     justify-content: center;
     align-items: center;
     width:44px;
-    height:34px;
+    height:29px;
     font-weight: bold;
     font-family: consolas;
     font-size: 1.2rem;
-    border:1px solid rgb(14, 14, 14);
+    border:1px solid rgba(14, 14, 14, 0.438);
     border-radius:5px;
     background-color: #a39588;
     box-shadow: inset 3px 3px 3px -2px rgba(255,255,255,0.9), 
@@ -276,20 +305,78 @@ body {
     cursor: pointer;
     user-select: none;
 }
-.igual button{
-    height:84px;
-    background-color:rgb(65, 163, 255)
+button#operar{
+    height:73px;
+    background-color:#7c6b5c;
 }
-.tecla_ac button, .tecla_c button{
-    background-color: rgb(204, 58, 58);
+button#reset, button#eliminar{
+    background-color: #cb4718;
     text-shadow: #ffffffb6 .5px .5px 1px;
 }
-.teclado button:active{
+
+
+[data-tipo="numero"]:active, [data-tipo="operador"]:active, button#operar:active, button#reset:active, button#eliminar:active,
+.tecla_off button:active, .tecla_on button:active, .abrir_parent button:active, .cerrar_parent button:active{
     box-shadow: inset 3px 3px 3px -2px rgba(34, 34, 34, 0.9),
-    inset -3px -3px 3px -2px rgba(34,34,34,0.9);
+    inset -3px -3px 3px -2px rgba(34,34,34,0.9)!important;
+}
+.direccional{
+    border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%!important;
+    position:relative;
+}
+
+.flechas{
+    width:96px;
+    height:72px;
+    border:1px solid rgba(14, 14, 14, 0.438);
+    border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%!important;
+    background-color: #A39588!important;
+    box-shadow: inset 3px 3px 3px -3px rgba(255,255,255,0.9), 
+                inset -3px -3px 3px -2px rgba(0,0,0,0.9), 
+                2px 3px 4px -1px rgba(0,0,0,0.7);
+    display:grid!important;
+    grid-template-columns: repeat(3,32px);
+    grid-template-rows: 18px 27px 27px;
+}
+.rightPress{
+    box-shadow: inset 7px 1px 3px -3px rgba(255,255,255,0.9), 
+                inset -4px 1px 10px 0px rgba(0,0,0,0.4)!important
+}
+.leftPress{
+    box-shadow: inset -6px -1px 3px -3px rgba(255,255,255,0.9), 
+                inset 4px 1px 10px 0px rgba(0,0,0,0.4),
+                2px 3px 4px -1px rgba(0,0,0,0.7)!important;
+}
+.highPress{
+    box-shadow: inset 0px -7px 7px -3px rgba(255,255,255,0.9),
+                inset 0px 3px 11px -1px rgba(0,0,0,0.4),
+                2px 3px 4px -1px rgba(0,0,0,0.7)!important;
+}
+.lowPress{
+    box-shadow: inset 0px 7px 7px -3px rgba(255,255,255,0.9),
+                inset 0px -21px 20px -5px rgba(0,0,0,0.4)!important;
+}
+.navUp{ grid-area: 1 / 2 / 2 / 3; }
+.navDown{ grid-area: 3 / 2 / 4 / 3; }
+.navLeft{ grid-area: 2 / 1 / 3 / 2; }
+.navRight{ grid-area: 2 / 3 / 3 / 4; }
+
+.navDown, .navUp, .navLeft, .navRight{
+    background-color: unset;
+    border:unset;
+    cursor:pointer;
+    user-select: none;
+    text-shadow: #ffffff 0.8px 0.8px 1px;
 }
 .credito{
     position:absolute;
     bottom:10px;
     left:10px;
+    color: white;
+}
+.mostrar{
+    opacity:1;
+}
+.ocultar{
+    opacity:0;
 }

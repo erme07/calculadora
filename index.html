@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -11,19 +11,15 @@
 <body>
     <div class="calculadora">
         <div class="logotipo">
-            <span>CASI0</span>
-            <div class="fotocelda">
-                <div class="celda"></div>
-                <div class="celda"></div>
-                <div class="celda"></div>
-            </div>
-            <span>MS-123</span>
+            <span class="marca">CASIO</span>
+            <div class="fotocelda"></div>
+            <span class="modelo">fx390</span>
         </div>
         <div class="pantalla">
             <div class="lineaSup">
                 <div class="indicadorIzq"><span class="flechaIzq">ï</span></div>
                 <div class="contenedorFormula">
-                    <span class="Ans"></span><p class="formula"></p><span class="blink">_</span>
+                    <p class="formula"></p><span class="blink">_</span>
                 </div>
                 <div class="indicadorDer">
                     <span class="flechaUp">ä</span><span class="flechaDown">ë</span><span class="flechaRight">ö</span>
@@ -32,28 +28,40 @@
             <div class="lineaInf">
                 <div id="resultado">0</div>
                 <div class="notacionExpo">
-                    <span class="exponente">-88</span><span class="base">x10</span>
+                    <span class="exponente"></span><span class="base">x10</span>
                 </div>
             </div>
         </div>
-        <div class="separador"></div>
+        <div class="divisor"></div>
         <div class="teclado">
-            <div class="tecla_0"><button name="numero">0</button></div>
-            <div class="tecla_1"><button name="numero">1</button></div>
-            <div class="tecla_2"><button name="numero">2</button></div>
-            <div class="tecla_3"><button name="numero">3</button></div>
-            <div class="tecla_4"><button name="numero">4</button></div>
-            <div class="tecla_5"><button name="numero">5</button></div>
-            <div class="tecla_6"><button name="numero">6</button></div>
-            <div class="tecla_7"><button name="numero">7</button></div>
-            <div class="tecla_8"><button name="numero">8</button></div>
-            <div class="tecla_9"><button name="numero">9</button></div>
-            <div class="punto"><button name="numero" data-valor=".">·</button></div>
-            <div class="multiplicacion"><button name="operador">×</button></div>
-            <div class="division"><button name="operador">÷</button></div>
-            <div class="suma"><button name="operador">+</button></div>
-            <div class="resta"><button name="operador" data-valor="-">−</button></div>
-            <div class="ans"><button name="operador">ANS</button></div>
+            <div class="tecla_off"><button id="off">OFF</button></div>
+            <div class="tecla_on"><button id="on">ON</button></div>
+            <div class="abrir_parent"><button data-tipo="numero" data-valor="(">(</button></div>
+            <div class="cerrar_parent"><button data-tipo="numero" data-valor=")">)</button></div>
+            <div class="direccional">
+                <div class="flechas">
+                    <button class="navUp" data-flecha="up">⮝</button>
+                    <button class="navDown" data-flecha="down">⮟</button>
+                    <button class="navLeft" data-flecha="left">⮜</button>
+                    <button class="navRight" data-flecha="right">⮞</button>
+                </div>
+            </div>
+            <div class="tecla_0"><button data-tipo="numero" data-valor="0">0</button></div>
+            <div class="tecla_1"><button data-tipo="numero" data-valor="1">1</button></div>
+            <div class="tecla_2"><button data-tipo="numero" data-valor="2">2</button></div>
+            <div class="tecla_3"><button data-tipo="numero" data-valor="3">3</button></div>
+            <div class="tecla_4"><button data-tipo="numero" data-valor="4">4</button></div>
+            <div class="tecla_5"><button data-tipo="numero" data-valor="5">5</button></div>
+            <div class="tecla_6"><button data-tipo="numero" data-valor="6">6</button></div>
+            <div class="tecla_7"><button data-tipo="numero" data-valor="7">7</button></div>
+            <div class="tecla_8"><button data-tipo="numero" data-valor="8">8</button></div>
+            <div class="tecla_9"><button data-tipo="numero" data-valor="9">9</button></div>
+            <div class="punto"><button data-tipo="numero" data-valor=".">·</button></div>
+            <div class="multiplicacion"><button data-tipo="operador" data-valor="×">×</button></div>
+            <div class="division"><button data-tipo="operador" data-valor="÷">÷</button></div>
+            <div class="suma"><button data-tipo="operador" data-valor="+">+</button></div>
+            <div class="resta"><button data-tipo="operador" data-valor="-">−</button></div>
+            <div class="ans"><button data-tipo="operador" data-valor="Ans">ANS</button></div>
             <div class="tecla_c"><button id="eliminar">C</button></div>
             <div class="tecla_ac"><button id="reset">AC</button></div>
             <div class="igual"><button id="operar">=</button></div>  
