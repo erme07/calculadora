@@ -140,6 +140,7 @@ body {
     font-family: ds-digital;
     font-size: 2rem;
     line-height: 1.8rem;
+    height: 28px;
     display: flex;
     position:relative;
     justify-content: flex-end;
