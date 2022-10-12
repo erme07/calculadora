@@ -75,7 +75,7 @@ function limpiarFormula(){
 function eliminar(){
     if(!igual && !error){
         if(formula.innerHTML[(formula.innerHTML.length)-1] === 's'){
-            formulaAux=valorAns.slice(0,-3);
+            formulaAux=formula.innerHTML.slice(0,-3);
             valorAns=formulaAux;
             formulaAux='';
             formulaAux=formula.innerHTML.slice(0,-3);
@@ -83,7 +83,7 @@ function eliminar(){
             formulaAux='';
             desplazarTexto();
         }else{
-            formulaAux=valorAns.slice(0,-1);
+            formulaAux=formula.innerHTML.slice(0,-1);
             valorAns=formulaAux;
             formulaAux='';
             formulaAux=formula.innerHTML.slice(0,-1);
