@@ -1,3 +1,6 @@
+/*
+Practicas Html/CSS/Javascript - Erik Medina
+*/
 
 const numBoton = document.querySelectorAll('[data-tipo="numero"], [data-tipo="operador"]');
 const formula = document.querySelector(".formula");
@@ -24,161 +27,49 @@ const storageExponente = [];
 
 let formulaBack='',formulaAux='',formulaAux2='', valorAns='',formulaDesplazada='', igual=false, 
     error=false, posicionStorage=0, posStorAux=0, memoria=false, encendido=true, desplazamiento=false, 
-    cursorInt=null,posCursor=0,contador=0, valorExp=0;
+    cursorInt=null,posCursor=0,contador=0, valorExp=0, datoCursor='';
 
-function errores(tipo){
-    if(tipo === 'sintax'){
-        formula.innerHTML='&nbsp;Sintax Error';
-    }else if(tipo === 'math'){
-        formula.innerHTML='&nbsp;&nbsp;Math Error';
-    }
-    blink.innerHTML='';
+
+function apagar(){
+    memoria=false;
+    resetear();
     resultado.innerHTML='';
-    error=true;
-    flechasMemoria();
-    desplazarTexto();
+    formula.innerHTML='';
+    blink.innerHTML='';
+    encendido=false;
+    resultado.classList.add("ocultar");
+    contenedorFormula.classList.add("ocultar");
+    flechaDown.classList.add("ocultar");
+    flechaRight.classList.add("ocultar");
+    flechaUp.classList.add("ocultar");
+    flechaIzq.classList.add("ocultar");
+    base.classList.add("ocultar");
+    exponente.classList.add("ocultar");
 }
 
-function ejecutar(){
-    let result;
-    let numeroMax=999999999999999;
-    let numeroMin=-numeroMax;
-    formulaBack=formula.innerHTML;
-    formulaBack=formulaBack.replace(/×/g,'*');
-    formulaBack=formulaBack.replace(/÷/g,'/');
-    formulaBack=formulaBack.replace(/Ans/g,valorAns);
-    result=Number(eval(formulaBack).toFixed(9));
-    if(result == Infinity || result == -Infinity|| result>numeroMax || result<numeroMin){
-        errores('math'); //las calculadores basicas suelen marcar error cuando el valor es infinito o demasiado grande
-    }else if(result.toString().length>10){
-        valorAns=result;
-        blink.innerHTML='';
-        igual=true;
-        notacionExpo(result);
-        setMemoria();
-        displayExpo('mostrar');
-        valorExp=0;
-    }else{
-        resultado.innerHTML = result;
-        valorAns=result;
-        igual=true;
-        blink.innerHTML='';
-        setMemoria();
-        displayExpo('ocultar');
-    }
+function encender(){
+    memoria=false;
+    posicionStorage=0;
+    posStorAux=0;
+    encendido=true;
+    resultado.innerHTML='0';
+    limpiarFormula();
+    resultado.classList.remove("ocultar");
+    contenedorFormula.classList.remove("ocultar");
+    flechaDown.classList.remove("ocultar");
+    flechaRight.classList.remove("ocultar");
+    flechaUp.classList.remove("ocultar");
+    flechaIzq.classList.remove("ocultar");
+    base.classList.remove("ocultar");
+    exponente.classList.remove("ocultar");
+    flechaRight.classList.remove("mostrar");
+    flechaUp.classList.remove("mostrar");
+    flechaIzq.classList.remove("mostrar");
 }
 
-function displayExpo(accion){
-    if(accion==='mostrar'){
-        base.classList.add("mostrar")
-        exponente.innerHTML=valorExp;
-        valorExp=0;
-    }else if(accion === 'ocultar'){
-        base.classList.remove("mostrar");
-        exponente.innerHTML='';
-    }
-}
-
-function notacionExpo(result){
-    result=result.toString();
-    let resultAux='';
-    if(result.includes('.')){
-        //pendiente desarrollo de comportamiento para exponentes negativos
-    }else{
-        valorExp=result.length-1;
-        resultAux=result[0]+'.'+result.substring(1,result.length);
-        resultAux=resultAux.substring(0,11);
-        resultado.innerHTML=resultAux;
-    }
-}
-
-function verificar(){
-    let aperturaParentesis=[], cerrarParentesis=[];
-    const valoresAdmitidos = /Ans|\(|\)|\.|[0-9]\+|\-|×|÷/g;
-    if(valoresAdmitidos.test(formula.innerHTML)){
-        aperturaParentesis=formula.innerHTML.match(/\(/g);
-        cerrarParentesis=formula.innerHTML.match(/\)/g);
-        if(aperturaParentesis!=cerrarParentesis){
-            if((aperturaParentesis==null && cerrarParentesis!=null) || (aperturaParentesis!=null && cerrarParentesis==null)){
-                errores('sintax');
-            }else if(aperturaParentesis.length!=cerrarParentesis.length){
-                errores('sintax');
-            }else{
-                ejecutar();
-            }
-        }else{
-            ejecutar();
-        }
-    }
-    /*Por ahora solo detecta algunos errores de sintaxis relacionados al mal uso de parentesis
-    Falta desarrollo para detectar mas tipos de errores 
-    al igual que las calculadoras convencionales */
-}
-
-function flechasMemoria(){
-    posStorAux=posicionStorage;
-    if(memoria && !error){
-        flechaUp.classList.add("mostrar");
-    }else {
-        flechaUp.classList.remove("mostrar");
-    }
-    flechaDown.classList.remove("mostrar");
-}
-
-function setMemoria(){
-    if(storageFormula.length<8){
-        posicionStorage=storageFormula.push(formula.innerHTML)
-        storageResultado.push(resultado.innerHTML);
-        storageExponente.push(valorExp);
-        posStorAux=posicionStorage-1;
-    }else if(storageFormula.length === 8){
-        storageFormula.push(formula.innerHTML)
-        storageFormula.shift()
-        storageResultado.push(resultado.innerHTML)
-        storageResultado.shift();
-        storageExponente.push(valorExp);
-        storageExponente.shift();
-        posicionStorage=storageFormula.length;
-        posStorAux=posicionStorage-1;
-    }
-    if(storageFormula.length!=0){
-        flechaUp.classList.add("mostrar");
-        memoria=true;
-    }
-    // sessionStorage.setItem("formulas",JSON.stringify(storageFormula));
-    // sessionStorage.setItem("resultados", JSON.stringify(storageResultado));
-    /* Alternativa usando almacenamiento local en el navegador para retener las operaciones realizadas */
-}
-
-function getMemoria(direccion){
-    if(memoria){
-        if(direccion ==='up' && posStorAux>=1){
-            posStorAux--;
-            console.log(posStorAux,storageFormula, storageResultado, storageExponente)
-            console.log(posStorAux);
-        }else if(direccion === 'down' && posStorAux<=posicionStorage-2){
-            posStorAux++;
-        }
-        blink.innerHTML='';
-        formula.innerHTML=storageFormula[posStorAux];
-        resultado.innerHTML=storageResultado[posStorAux];
-        if(storageExponente[posStorAux]==0){
-            displayExpo('ocultar');
-        }else{
-            valorExp=storageExponente[posStorAux]
-            displayExpo('mostrar');
-        }
-        if(posStorAux==0){
-            flechaUp.classList.remove("mostrar");
-        }else{
-            flechaUp.classList.add("mostrar");
-        }
-        if(posStorAux<posicionStorage-1){
-            flechaDown.classList.add("mostrar");
-        }else if(posStorAux==posicionStorage-1){
-            flechaDown.classList.remove("mostrar");
-        }
-    }
+function limpiarFormula(){
+    formula.innerHTML='';
+    blink.innerHTML='_';
 }
 
 function eliminar(){
@@ -203,13 +94,9 @@ function eliminar(){
     }
 }
 
-function limpiarFormula(){
-    formula.innerHTML='';
-    blink.innerHTML='_';
-}
-
 function resetear(){
     limpiarFormula();
+    formulaBack='';
     resultado.innerHTML='0';
     displayExpo('ocultar');
     flechaIzq.classList.remove('mostrar');
@@ -217,6 +104,12 @@ function resetear(){
     igual=false;
     flechasMemoria();
     stopInterval();
+}
+
+function stopInterval() {
+    clearInterval(cursorInt);
+    // liberar nuestro inervalId de la variable
+    cursorInt = null;
 }
 
 function desplazarTexto(){
@@ -240,15 +133,30 @@ function flashCursor() {
     }
 }
 
-function stopInterval() {
-    clearInterval(cursorInt);
-    // liberar nuestro inervalId de la variable
-    cursorInt = null;
+function flechasMemoria(){
+    posStorAux=posicionStorage;
+    if(memoria && !error){
+        flechaUp.classList.add("mostrar");
+    }else {
+        flechaUp.classList.remove("mostrar");
+    }
+    flechaDown.classList.remove("mostrar");
 }
 
-let datoCursor='';
+function direccionPress(direccion){
+    if(direccion==='right'){
+        flechas.classList.toggle("rightPress");
+    }else if(direccion==='left'){
+        flechas.classList.toggle("leftPress");
+    }else if(direccion==='up'){
+        flechas.classList.toggle("highPress");
+    }else if(direccion==='down'){
+        flechas.classList.toggle("lowPress");
+    }
+    
+}
 
-function editarFormula(direccion){
+function editarFormula(direccion){//pendiente de desarrollo
 
     if(direccion === 'left' && desplazamiento){ 
         blink.innerHTML='';
@@ -293,58 +201,172 @@ function editarFormula(direccion){
     }
 }
 
-function direccionPress(direccion){
-    if(direccion==='right'){
-        flechas.classList.toggle("rightPress");
-    }else if(direccion==='left'){
-        flechas.classList.toggle("leftPress");
-    }else if(direccion==='up'){
-        flechas.classList.toggle("highPress");
-    }else if(direccion==='down'){
-        flechas.classList.toggle("lowPress");
+function errores(tipo){
+    if(tipo === 'sintax'){
+        formula.innerHTML='&nbsp;Sintax Error';
+    }else if(tipo === 'math'){
+        formula.innerHTML='&nbsp;&nbsp;Math Error';
     }
-    
+    blink.innerHTML='';
+    resultado.innerHTML='';
+    error=true;
+    flechasMemoria();
+    desplazarTexto();
 }
 
-function apagar(prueba){
-    memoria=false;
-    resetear();
-    resultado.innerHTML='';
-    formula.innerHTML='';
-    blink.innerHTML='';
-    encendido=false;
-    resultado.classList.add("ocultar");
-    contenedorFormula.classList.add("ocultar");
-    flechaDown.classList.add("ocultar");
-    flechaRight.classList.add("ocultar");
-    flechaUp.classList.add("ocultar");
-    flechaIzq.classList.add("ocultar");
-    base.classList.add("ocultar");
-    exponente.classList.add("ocultar");
+function displayExpo(accion){
+    if(accion==='mostrar'){
+        base.classList.add("mostrar")
+        exponente.innerHTML=valorExp;
+        valorExp=0;
+    }else if(accion === 'ocultar'){
+        base.classList.remove("mostrar");
+        exponente.innerHTML='';
+    }
 }
-function encender(){
-    memoria=false;
-    posicionStorage=0;
-    posStorAux=0;
-    encendido=true;
-    resultado.innerHTML='0';
-    limpiarFormula();
-    resultado.classList.remove("ocultar");
-    contenedorFormula.classList.remove("ocultar");
-    flechaDown.classList.remove("ocultar");
-    flechaRight.classList.remove("ocultar");
-    flechaUp.classList.remove("ocultar");
-    flechaIzq.classList.remove("ocultar");
-    base.classList.remove("ocultar");
-    exponente.classList.remove("ocultar");
-    flechaRight.classList.remove("mostrar");
-    flechaUp.classList.remove("mostrar");
-    flechaIzq.classList.remove("mostrar");
+
+function notacionExpo(result){
+    result=result.toString();
+    let resultAux='';
+    if(result.includes('.')){
+        //pendiente desarrollo de comportamiento para exponentes negativos
+        if(result[0]=='0'){
+        }else{
+            resultAux=result.substring(0,11);
+            if(!resultAux.includes('.') || resultAux[resultAux.length-1]=='.'){
+                resultAux=resultAux.substring(0,10);
+            }
+        }
+    }else{
+        valorExp=result.length-1;
+        resultAux=result[0]+'.'+result.substring(1,result.length);
+        resultAux=resultAux.substring(0,11);
+        resultAux=eval(resultAux); //usando eval se eliminan los ceros innecesarios
+        valorAns=resultAux+'e'+valorExp;
+        resultado.innerHTML=resultAux;
+    }
+}
+
+function setMemoria(){
+    if(storageFormula.length<8){
+        posicionStorage=storageFormula.push(formula.innerHTML)
+        storageResultado.push(resultado.innerHTML);
+        storageExponente.push(valorExp);
+        posStorAux=posicionStorage-1;
+    }else if(storageFormula.length === 8){
+        storageFormula.push(formula.innerHTML)
+        storageFormula.shift()
+        storageResultado.push(resultado.innerHTML)
+        storageResultado.shift();
+        storageExponente.push(valorExp);
+        storageExponente.shift();
+        posicionStorage=storageFormula.length;
+        posStorAux=posicionStorage-1;
+    }
+    if(storageFormula.length!=0){
+        flechaUp.classList.add("mostrar");
+        memoria=true;
+    }
+}
+
+function getMemoria(direccion){
+    if(memoria){
+        if(direccion ==='up' && posStorAux>=1){
+            posStorAux--;
+        }else if(direccion === 'down' && posStorAux<=posicionStorage-2){
+            posStorAux++;
+        }
+        blink.innerHTML='';
+        formula.innerHTML=storageFormula[posStorAux];
+        resultado.innerHTML=storageResultado[posStorAux];
+        if(storageExponente[posStorAux]==0){
+            displayExpo('ocultar');
+        }else{
+            valorExp=storageExponente[posStorAux]
+            displayExpo('mostrar');
+        }
+        if(posStorAux==0){
+            flechaUp.classList.remove("mostrar");
+        }else{
+            flechaUp.classList.add("mostrar");
+        }
+        if(posStorAux<posicionStorage-1){
+            flechaDown.classList.add("mostrar");
+        }else if(posStorAux==posicionStorage-1){
+            flechaDown.classList.remove("mostrar");
+        }
+    }
+}
+
+function verificar(){
+    let aperturaParentesis=0, cerrarParentesis=0;
+    const valoresAdmitidos = /Ans|e|\(|\)|\.|[0-9]|\+|\-|×|÷/g;
+    const errorSintaxis = /(\.\.+)|(÷÷+)|(××+)|(\)[0-9])/g // '..','//','**' error de sintaxis
+    const errorSintaxisOperadores = /((?<![0-9]|\))[\/\*])|([\/\*](?![0-9]|\(|\-|\+|.))/
+    const listaOperadores = ['+','-','*','/'];
+    const quitarRepetidos = [/\+0+/,/\-0+/,/\*0+/,/\/0+/];
+
+    if(valoresAdmitidos.test(formula.innerHTML)){//eval() solo recibirá los valores que defino como permitidos
+        formulaBack=formula.innerHTML;
+        //reemplazo los operadores por su valor permitido para eval()
+        formulaBack=formulaBack.replace(/×/g,'*');
+        formulaBack=formulaBack.replace(/÷/g,'/');
+        formulaBack=formulaBack.replace(/Ans/g,valorAns);
+        //quito los ceros a la izquierda para que no se tomen como numeros octales.
+        while(formulaBack[0]=='0'){formulaBack=formulaBack.substring(1,formulaBack.length);}
+        listaOperadores.forEach((e,i) => formulaBack=formulaBack.replace(quitarRepetidos[i],listaOperadores[i]))
+        
+        formulaBack.split('').forEach((e)=>{ 
+            if(e=='(')aperturaParentesis++;
+            if(e==')')cerrarParentesis++;
+            //si no coinciden la cantidad de parentesis de apertura y cierre entonces hay un error de sintaxis
+        });
+
+        if(formulaBack.match(/(\-[+-]+)|(\+[-+]+)/g)!=null){
+            formulaBack=formulaBack.replace(/\-{2}/g ,'+');
+            formulaBack=formulaBack.replace(/\++/g, '+');
+        }// ya que eval() no lo admite, proceso la regla de los signos previamente.
+
+        //agrego la multiplicacion para expresiones del tipo a(bc)
+        formulaBack=formulaBack.replace(/(?<=[0-9])\(/, '*(');
+
+        if((errorSintaxis.test(formulaBack)) || (aperturaParentesis!=cerrarParentesis) || formulaBack.endsWith('+') ||
+        formulaBack.endsWith('-') || errorSintaxisOperadores.test(formulaBack) || /\(\)/.test(formulaBack)|| 
+        formulaBack.endsWith('+') || formulaBack.endsWith('-')){
+            errores('sintax');
+        }else{
+            ejecutar();
+        }
+    }
+}
+
+function ejecutar(){
+    let result;
+    let numeroMax=999999999999999;
+    let numeroMin=-numeroMax;
+    result=Number(eval(formulaBack).toFixed(9));
+    if(result == Infinity || result == -Infinity|| result>numeroMax || result<numeroMin){
+        errores('math'); //las calculadores basicas suelen marcar error cuando el valor es infinito o demasiado grande
+    }else if((result.toString().length>10 && !result.toString().includes('.')) || result.toString().length>11){
+        blink.innerHTML='';
+        igual=true;
+        notacionExpo(result);
+        setMemoria();
+        displayExpo('mostrar');
+        valorExp=0;
+    }else{
+        resultado.innerHTML = result;
+        valorAns=result;
+        igual=true;
+        blink.innerHTML='';
+        setMemoria();
+        displayExpo('ocultar');
+    }
 }
 
 if(encendido){
     numBoton.forEach((elemento) => {
-        elemento.addEventListener('click', function(event){
+        elemento.addEventListener('click', function(){
             if(elemento.getAttribute("data-valor").length = 1 || elemento.getAttribute("data-valor") === 'Ans'){
                 if(elemento.getAttribute("data-tipo") ==='operador' && resultado.innerHTML!='0' && igual && elemento.getAttribute("data-valor") !='Ans'){
                     igual=false;
@@ -376,9 +398,9 @@ if(encendido){
             direccionPress(event.target.getAttribute("data-flecha"))
         });
     });
-    operar.onclick = verificar;
-    borrar.onclick = eliminar;
-    reset.onclick = resetear;
+    operar.addEventListener('click', verificar);
+    borrar.addEventListener('click', eliminar);
+    reset.addEventListener('click', resetear);
     on.addEventListener('click',encender);
     off.addEventListener('click',apagar);
 }

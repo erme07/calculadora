@@ -1,3 +1,7 @@
+/*
+Practicas Html/CSS/Javascript - Erik Medina
+*/
+
 *{
 	margin: 0;
 	padding: 0;
@@ -21,8 +25,8 @@ body {
 	justify-content: center;
 	align-items: center;
 	min-height: 100vh;
-    background: rgb(133,106,5);
-    background: radial-gradient(circle, rgba(133,106,5,1) 0%, rgba(120,66,4,1) 39%, rgba(60,32,1,1) 100%);
+    background: rgb(213,207,172);
+    background: radial-gradient(circle, rgba(213,207,172,1) 0%, rgba(191,156,36,1) 100%);
 }
 .calculadora {
     display:flex;
@@ -32,9 +36,9 @@ body {
 	padding: 20px;
     width:300px;
 	border-radius: 20px;
-    /* background-image: url("img/textura.jpg");
+    background-image: url("img/metal-textura.jpg");
     background-repeat: no-repeat;
-    background-position: top center; */
+    background-position: top center;
     background-color: #cfcfcf; 
     border-left: 5px solid #696768;
     border-right: 5px solid #696768;
@@ -116,6 +120,7 @@ body {
 .formula{
     overflow: hidden;
     margin-left:.8px;
+    white-space: nowrap;
 }
 .desplazar{
     display: flex;
@@ -372,7 +377,7 @@ button#reset, button#eliminar{
     position:absolute;
     bottom:10px;
     left:10px;
-    color: white;
+    color: #000;
 }
 .mostrar{
     opacity:1;
