@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="img/favicon.png" type="image/x-icon"> 
-    <link rel="stylesheet" type="text/css" href="style.css">
-    
+    <link rel="icon" href="img/favicon.png" type="image/x-icon">
+    <link rel="preload" href="fonts/Ds-digital.ttf" as="font" type="font/ttf" crossorigin> 
+    <link rel="stylesheet" type="text/css" href="style.css" as="style">
+    <script async src="script.js"></script>
     <title>Calculadora Javascript</title>
 </head>
 <body>
@@ -34,9 +35,9 @@
             </div>
         </div>
         <div class="divisor"></div>
-        <div class="teclado">
-            <div class="tecla_off"><button id="off">OFF</button></div>
-            <div class="tecla_on"><button id="on">ON</button></div>
+        <div id="teclado" class="teclado">
+            <div class="tecla_off"><button data-valor="off">OFF</button></div>
+            <div class="tecla_on"><button data-valor="on">ON</button></div>
             <div class="abrir_parent"><button data-tipo="numero" data-valor="(">(</button></div>
             <div class="cerrar_parent"><button data-tipo="numero" data-valor=")">)</button></div>
             <div class="direccional">
@@ -63,12 +64,12 @@
             <div class="suma"><button data-tipo="operador" data-valor="+">+</button></div>
             <div class="resta"><button data-tipo="operador" data-valor="-">−</button></div>
             <div class="ans"><button data-tipo="operador" data-valor="Ans">ANS</button></div>
-            <div class="tecla_c"><button id="eliminar">C</button></div>
-            <div class="tecla_ac"><button id="reset">AC</button></div>
-            <div class="igual"><button id="operar">=</button></div>  
+            <div class="tecla_c"><button data-valor="eliminar">C</button></div>
+            <div class="tecla_ac"><button data-valor="reset">AC</button></div>
+            <div class="igual"><button data-valor="operar">=</button></div>  
         </div>
     </div>
     <div class="credito">Practicas Html/CSS/Javascript - Erik Medina</div>
-    <script src="script.js"></script>
+    
 </body>
 </html>

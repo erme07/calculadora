@@ -10,14 +10,17 @@ Practicas Html/CSS/Javascript - Erik Medina
 @font-face {
     font-family: ds-digital;
     src: url(fonts/Ds-Digital.ttf);
+    font-display: swap;
 }
 @font-face {
     font-family: ericsson;
     src: url(fonts/Ericsson.ttf);
+    font-display: swap;
 }
 @font-face {
     font-family: eurostar;
     src: url(fonts/Eurostarblack.ttf);
+    font-display: swap;
 }
 body {
 	display: flex;
@@ -291,7 +294,7 @@ body {
     background-color: #919191;
 }
 
-[data-tipo="numero"], [data-tipo="operador"], button#operar, button#reset, button#eliminar,
+[data-tipo="numero"], [data-tipo="operador"], [data-valor="operar"], [data-valor="reset"], [data-valor="eliminar"],
 .tecla_off button, .tecla_on button, .abrir_parent button, .cerrar_parent button {
     display:flex;
     justify-content: center;
@@ -311,17 +314,17 @@ body {
     cursor: pointer;
     user-select: none;
 }
-button#operar{
+[data-valor="operar"]{
     height:73px;
     background-color:#7c6b5c;
 }
-button#reset, button#eliminar{
+[data-valor="reset"], [data-valor="eliminar"]{
     background-color: #cb4718;
     text-shadow: #ffffffb6 .5px .5px 1px;
 }
 
 
-[data-tipo="numero"]:active, [data-tipo="operador"]:active, button#operar:active, button#reset:active, button#eliminar:active,
+[data-tipo="numero"]:active, [data-tipo="operador"]:active, [data-valor="operar"]:active, [data-valor="reset"]:active, [data-valor="eliminar"]:active,
 .tecla_off button:active, .tecla_on button:active, .abrir_parent button:active, .cerrar_parent button:active{
     box-shadow: inset 3px 3px 3px -2px rgba(34, 34, 34, 0.9),
     inset -3px -3px 3px -2px rgba(34,34,34,0.9)!important;
@@ -376,9 +379,10 @@ button#reset, button#eliminar{
 }
 .credito{
     position:absolute;
-    bottom:10px;
-    left:10px;
+    bottom:5px;
+    left:5px;
     color: #000;
+    font-size: 11px;
 }
 .mostrar{
     opacity:1;

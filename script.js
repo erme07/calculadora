@@ -1,22 +1,16 @@
 /*
 Practicas Html/CSS/Javascript - Erik Medina
 */
-
-const numBoton = document.querySelectorAll('[data-tipo="numero"], [data-tipo="operador"]');
+const teclado = document.getElementById('teclado');
 const formula = document.querySelector(".formula");
 const blink = document.querySelector(".blink");
 const resultado = document.getElementById("resultado");
-const borrar = document.getElementById("eliminar");
-const reset = document.getElementById("reset");
-const operar = document.getElementById("operar");
 const exponente = document.querySelector(".exponente");
 const base = document.querySelector(".base");
 const flechaIzq = document.querySelector(".flechaIzq");
 const flechaUp = document.querySelector(".flechaUp");
 const flechaDown =document.querySelector(".flechaDown");
 const flechaRight = document.querySelector(".flechaRight");
-const off = document.getElementById("off");
-const on = document.getElementById("on");
 const contenedorFormula = document.querySelector('.contenedorFormula'); 
 const padDireccional = document.querySelectorAll(".navLeft, .navRight, .navUp, .navDown");
 const flechas = document.querySelector(".flechas");
@@ -365,42 +359,46 @@ function ejecutar(){
 }
 
 if(encendido){
-    numBoton.forEach((elemento) => {
-        elemento.addEventListener('click', function(){
-            if(elemento.getAttribute("data-valor").length = 1 || elemento.getAttribute("data-valor") === 'Ans'){
-                if(elemento.getAttribute("data-tipo") ==='operador' && resultado.innerHTML!='0' && igual && elemento.getAttribute("data-valor") !='Ans'){
+    teclado.addEventListener('click', (e)=>{
+        if(e.target && ( e.target.getAttribute("data-tipo")==='numero' || e.target.getAttribute("data-tipo") ==='operador')){
+            if(e.target.getAttribute("data-valor").length === 1 || e.target.getAttribute("data-valor") === 'Ans'){
+                if(e.target.getAttribute("data-tipo") ==='operador' && resultado.innerHTML!='0' && igual && e.target.getAttribute("data-valor") !='Ans'){
                     igual=false;
                     limpiarFormula();
-                    formula.innerHTML+='Ans'+ elemento.getAttribute("data-valor");
+                    formula.innerHTML+='Ans'+ e.target.getAttribute("data-valor");
                 }else if(resultado.innerHTML!='0' && igual){
                     limpiarFormula();
                     flechasMemoria();
                     igual=false;
-                    formula.innerHTML+=elemento.getAttribute("data-valor");
+                    formula.innerHTML+=e.target.getAttribute("data-valor");
                 }else if(!error){
-                    formula.innerHTML+=elemento.getAttribute("data-valor");
+                    formula.innerHTML+=e.target.getAttribute("data-valor");
                 }
                 desplazarTexto();
             }
-        });
+        }else if(e.target.getAttribute("data-valor") === 'eliminar'){
+            eliminar();
+        }else if(e.target.getAttribute("data-valor") === 'reset'){
+            resetear();
+        }else if(e.target.getAttribute("data-valor") === 'operar'){
+            verificar();
+        }else if(e.target.getAttribute("data-valor") === 'off'){
+            apagar();
+        }else if(e.target.getAttribute("data-valor") === 'on'){
+            encender();
+        }
     });
-    padDireccional.forEach((elemento)=>{
-        elemento.addEventListener('mousedown', function(event){
-            direccionPress(event.target.getAttribute("data-flecha"));
-            if(event.target.getAttribute("data-flecha") === 'left' || event.target.getAttribute("data-flecha") === 'right'){
+    flechas.addEventListener('mousedown', (e)=>{
+        if(e.target && e.target.tagName === 'BUTTON' ){
+            direccionPress(e.target.getAttribute("data-flecha"));
+            if(e.target.getAttribute("data-flecha") === 'left' || e.target.getAttribute("data-flecha") === 'right'){
                 // editarFormula(event.target.getAttribute("data-flecha")); 
                 // Funcion que permite navegar sobre la formula, para editar o insertar nuevos elementos.
-            }else if(event.target.getAttribute("data-flecha") === 'up' || event.target.getAttribute("data-flecha") === 'down'){
-                getMemoria(event.target.getAttribute("data-flecha"));
+            }else if(e.target.getAttribute("data-flecha") === 'up' || e.target.getAttribute("data-flecha") === 'down'){
+                getMemoria(e.target.getAttribute("data-flecha"));
             }
-        });
-        elemento.addEventListener('mouseup', function(event){
-            direccionPress(event.target.getAttribute("data-flecha"))
-        });
+        }
     });
-    operar.addEventListener('click', verificar);
-    borrar.addEventListener('click', eliminar);
-    reset.addEventListener('click', resetear);
-    on.addEventListener('click',encender);
-    off.addEventListener('click',apagar);
+    flechas.addEventListener('mouseup', (e)=> direccionPress(e.target.getAttribute("data-flecha"))
+    );
 }
