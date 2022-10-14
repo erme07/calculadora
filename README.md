@@ -1,8 +1,10 @@
-# Calculadora
+# Calculadora Javascript
 
 La idea de este proyecto es conseguir una representación "fiel" del comportamiento de una calculadora a la hora de resolver operaciones matemáticas, emulando la funcionalidad de la misma y a la vez marcando los mismos errores que una calculadora convencional.
 
-**Funicionalidades:**
+[Pruebala Online](https://erme07.github.io/calculadora/)
+
+## Funcionalidades:
 
 * Guarda los resultados y las fórmulas de las ultimas 8 operaciones realizadas
 * Botones de navegación para buscar entre las operaciones guardadas en memoria.
@@ -14,8 +16,7 @@ La idea de este proyecto es conseguir una representación "fiel" del comportamie
 * Emula el aspecto de las pantallas lcd típicas
 * Puede apagarse y encenderse.
 
-
 **Queda pendiente la posibilidad de editar o insertar sobre formulas escritas, usando los botones de navegación*
 
-
+## Screenshot:
 ![Calculadora](Preview.jpg)
