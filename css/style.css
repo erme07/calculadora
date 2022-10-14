@@ -9,17 +9,17 @@ Practicas Html/CSS/Javascript - Erik Medina
 }
 @font-face {
     font-family: ds-digital;
-    src: url(fonts/Ds-Digital.ttf);
+    src: url(../fonts/Ds-Digital.ttf);
     font-display: swap;
 }
 @font-face {
     font-family: ericsson;
-    src: url(fonts/Ericsson.ttf);
+    src: url(../fonts/Ericsson.ttf);
     font-display: swap;
 }
 @font-face {
     font-family: eurostar;
-    src: url(fonts/Eurostarblack.ttf);
+    src: url(../fonts/Eurostarblack.ttf);
     font-display: swap;
 }
 body {
@@ -39,7 +39,7 @@ body {
 	padding: 20px;
     width:300px;
 	border-radius: 20px;
-    background-image: url("img/metal-textura.jpg");
+    background-image: url("../img/metal-textura.jpg");
     background-repeat: no-repeat;
     background-position: top center;
     background-color: #cfcfcf; 
@@ -74,7 +74,6 @@ body {
 .logotipo{
     display:grid;
     width:100%;
-    font-weight: bold;
     grid-template-columns: 1fr 1fr 1fr;
     margin:10px 0px;
     justify-content: space-between;
@@ -88,7 +87,10 @@ body {
     font-family: eurostar;
     font-size: 14px;
 }
-
+.modelo{
+    font-weight: bold;
+    font-family: serif;
+}
 .fotocelda{
     width: 100%;
     display:flex;
@@ -166,13 +168,13 @@ body {
     opacity:.1;
 }
 .flechaUp{
-    top:-8px;
+    top:-10px;
 }
 .flechaRight, .flechaIzq{
-    bottom:1px;
+    bottom:0px;
 }
 .flechaDown{
-    top:1px;
+    top:-1px;
 }
 
 .lineaSup{
@@ -190,6 +192,7 @@ body {
     position:relative;
     overflow: hidden;
     display: flex;
+    align-items: center;
 }
 .contenedorFormula::before{
     position:absolute;
@@ -221,7 +224,6 @@ body {
     width:100%;
     position: relative;
     padding-right: 4px;
-    padding-top: 3px;
     text-align: right;
     --opacityValue2:.1;
 }
