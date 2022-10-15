@@ -225,6 +225,7 @@ function notacionExpo(result){
     if(result.includes('.')){
         //pendiente desarrollo de comportamiento para exponentes negativos
         if(result[0]=='0'){
+
         }else{
             resultAux=result.substring(0,11);
             if(!resultAux.includes('.') || resultAux[resultAux.length-1]=='.'){
@@ -358,6 +359,24 @@ function ejecutar(){
     }
 }
 
+function isMobile() {
+    const toMatch = [
+        /Android/i,
+        /webOS/i,
+        /iPhone/i,
+        /iPad/i,
+        /iPod/i,
+        /BlackBerry/i,
+        /Windows Phone/i,
+        /Opera Mini/i,
+        /IEMobile/i
+    ];
+
+    return toMatch.some((toMatchItem) => {
+        return navigator.userAgent.match(toMatchItem);
+    });
+}
+
 if(encendido){
     teclado.addEventListener('click', (e)=>{
         if(e.target && ( e.target.getAttribute("data-tipo")==='numero' || e.target.getAttribute("data-tipo") ==='operador')){
@@ -388,17 +407,33 @@ if(encendido){
             encender();
         }
     });
-    flechas.addEventListener('mousedown', (e)=>{
-        if(e.target && e.target.tagName === 'BUTTON' ){
-            direccionPress(e.target.getAttribute("data-flecha"));
-            if(e.target.getAttribute("data-flecha") === 'left' || e.target.getAttribute("data-flecha") === 'right'){
-                // editarFormula(event.target.getAttribute("data-flecha")); 
-                // Funcion que permite navegar sobre la formula, para editar o insertar nuevos elementos.
-            }else if(e.target.getAttribute("data-flecha") === 'up' || e.target.getAttribute("data-flecha") === 'down'){
-                getMemoria(e.target.getAttribute("data-flecha"));
+    if(isMobile()){
+        flechas.addEventListener('touchstart', (e)=>{
+            if(e.target && e.target.tagName === 'BUTTON' ){
+                direccionPress(e.target.getAttribute("data-flecha"));
+                if(e.target.getAttribute("data-flecha") === 'left' || e.target.getAttribute("data-flecha") === 'right'){
+                    // editarFormula(event.target.getAttribute("data-flecha")); 
+                    // Funcion que permite navegar sobre la formula, para editar o insertar nuevos elementos.
+                }else if(e.target.getAttribute("data-flecha") === 'up' || e.target.getAttribute("data-flecha") === 'down'){
+                    getMemoria(e.target.getAttribute("data-flecha"));
+                }
             }
-        }
-    });
-    flechas.addEventListener('mouseup', (e)=> direccionPress(e.target.getAttribute("data-flecha"))
-    );
+        });
+        flechas.addEventListener('touchend', (e)=> direccionPress(e.target.getAttribute("data-flecha"))
+        );
+    }else{
+        flechas.addEventListener('mousedown', (e)=>{
+            if(e.target && e.target.tagName === 'BUTTON' ){
+                direccionPress(e.target.getAttribute("data-flecha"));
+                if(e.target.getAttribute("data-flecha") === 'left' || e.target.getAttribute("data-flecha") === 'right'){
+                    // editarFormula(event.target.getAttribute("data-flecha")); 
+                    // Funcion que permite navegar sobre la formula, para editar o insertar nuevos elementos.
+                }else if(e.target.getAttribute("data-flecha") === 'up' || e.target.getAttribute("data-flecha") === 'down'){
+                    getMemoria(e.target.getAttribute("data-flecha"));
+                }
+            }
+        });
+        flechas.addEventListener('mouseup', (e)=> direccionPress(e.target.getAttribute("data-flecha"))
+        );
+    }
 }
