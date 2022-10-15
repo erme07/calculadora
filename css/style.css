@@ -7,6 +7,7 @@ Practicas Html/CSS/Javascript - Erik Medina
 	padding: 0;
 	box-sizing: border-box;
     -webkit-tap-highlight-color: rgba(0,0,0,0);
+    user-select: none;
 }
 @font-face {
     font-family: ds-digital;
@@ -315,7 +316,6 @@ body {
                 2px 3px 4px -1px rgba(0,0,0,0.7);
     text-shadow: #ffffff .8px .8px 1px;
     cursor: pointer;
-    user-select: none;
 }
 [data-valor="operar"]{
     height:73px;
@@ -380,7 +380,6 @@ body {
     background-color: unset;
     border:unset;
     cursor:pointer;
-    user-select: none;
     text-shadow: #ffffff 0.8px 0.8px 1px;
 }
 .credito{
