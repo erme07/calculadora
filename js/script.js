@@ -1,23 +1,23 @@
 /*
 Practicas Html/CSS/Javascript - Erik Medina
 */
-const teclado = document.getElementById('teclado');
-const formula = document.querySelector(".formula");
-const blink = document.querySelector(".blink");
-const resultado = document.getElementById("resultado");
-const exponente = document.querySelector(".exponente");
-const base = document.querySelector(".base");
-const flechaIzq = document.querySelector(".flechaIzq");
-const flechaUp = document.querySelector(".flechaUp");
-const flechaDown =document.querySelector(".flechaDown");
-const flechaRight = document.querySelector(".flechaRight");
-const contenedorFormula = document.querySelector('.contenedorFormula'); 
-const padDireccional = document.querySelectorAll(".navLeft, .navRight, .navUp, .navDown");
-const flechas = document.querySelector(".flechas");
+const teclado = document.getElementById('teclado'),
+    formula = document.querySelector(".formula"),
+    blink = document.querySelector(".blink"),
+    resultado = document.getElementById("resultado"),
+    exponente = document.querySelector(".exponente"),
+    base = document.querySelector(".base"),
+    flechaIzq = document.querySelector(".flechaIzq"),
+    flechaUp = document.querySelector(".flechaUp"),
+    flechaDown =document.querySelector(".flechaDown"),
+    flechaRight = document.querySelector(".flechaRight"),
+    contenedorFormula = document.querySelector('.contenedorFormula'),
+    padDireccional = document.querySelectorAll(".navLeft, .navRight, .navUp, .navDown"),
+    flechas = document.querySelector(".flechas");
 
-const storageFormula = [];
-const storageResultado = [];
-const storageExponente = [];
+const storageFormula = [],
+    storageResultado = [],
+    storageExponente = [];
 
 let formulaBack='',formulaAux='',formulaAux2='', valorAns='',formulaDesplazada='', igual=false, 
     error=false, posicionStorage=0, posStorAux=0, memoria=false, encendido=true, desplazamiento=false, 
@@ -225,12 +225,23 @@ function notacionExpo(result){
     if(result.includes('.')){
         //pendiente desarrollo de comportamiento para exponentes negativos
         if(result[0]=='0'){
-
+            resultAux=result.split('.');
         }else{
             resultAux=result.substring(0,11);
             if(!resultAux.includes('.') || resultAux[resultAux.length-1]=='.'){
                 resultAux=resultAux.substring(0,10);
             }
+        }
+    }else if(result.includes('e')){
+        valorAns=result;
+        resultAux= result.split('e');
+        resultado.innerHTML=result[0];
+        if(Number(resultAux[1])>-10 && Number(resultAux[1])<0){
+            valorExp='-0'+ Number(resultAux[1])*-1;
+        }else if(Number(resultAux[1])>0 && Number(resultAux[1])<10){
+            valorExp='0'+ Number(resultAux[1])
+        }else{
+            valorExp=resultAux[1];
         }
     }else{
         valorExp=result.length-1;
@@ -296,10 +307,10 @@ function getMemoria(direccion){
 function verificar(){
     let aperturaParentesis=0, cerrarParentesis=0;
     const valoresAdmitidos = /Ans|e|\(|\)|\.|[0-9]|\+|\-|×|÷/g;
-    const errorSintaxis = /(\.\.+)|(÷÷+)|(××+)|(\)[0-9])/g // '..','//','**' error de sintaxis
+    const errorSintaxis = /(\.\.+)|\.[0-9]+\.|\.\(|\)\.|(÷÷+)|(××+)|(\)[0-9])/g // '..','//','**' error de sintaxis
     const errorSintaxisOperadores = /((?<![0-9]|\))[\/\*])|([\/\*](?![0-9]|\(|\-|\+|.))/
     const listaOperadores = ['+','-','*','/'];
-    const quitarRepetidos = [/\+0+/,/\-0+/,/\*0+/,/\/0+/];
+    const quitarRepetidos = [/\+0+(?!$)/,/\-0+(?!$)/,/\*0+(?!$)/,/\/0+(?!$)/];
 
     if(valoresAdmitidos.test(formula.innerHTML)){//eval() solo recibirá los valores que defino como permitidos
         formulaBack=formula.innerHTML;
@@ -340,9 +351,10 @@ function ejecutar(){
     let numeroMax=999999999999999;
     let numeroMin=-numeroMax;
     result=Number(eval(formulaBack).toFixed(9));
+    console.log(result);
     if(result == Infinity || result == -Infinity|| result>numeroMax || result<numeroMin){
         errores('math'); //las calculadores basicas suelen marcar error cuando el valor es infinito o demasiado grande
-    }else if((result.toString().length>10 && !result.toString().includes('.')) || result.toString().length>11){
+    }else if((result.toString().length>10 && !result.toString().includes('.')) || result.toString().length>11 || result.toString().includes('e')){
         blink.innerHTML='';
         igual=true;
         notacionExpo(result);
@@ -379,6 +391,8 @@ function isMobile() {
 
 if(encendido){
     teclado.addEventListener('click', (e)=>{
+        e.preventDefault();
+        e.stopPropagation();
         if(e.target && ( e.target.getAttribute("data-tipo")==='numero' || e.target.getAttribute("data-tipo") ==='operador')){
             if(e.target.getAttribute("data-valor").length === 1 || e.target.getAttribute("data-valor") === 'Ans'){
                 if(e.target.getAttribute("data-tipo") ==='operador' && resultado.innerHTML!='0' && igual && e.target.getAttribute("data-valor") !='Ans'){
@@ -409,6 +423,8 @@ if(encendido){
     });
     if(isMobile()){
         flechas.addEventListener('touchstart', (e)=>{
+            e.preventDefault();
+            e.stopPropagation();
             if(e.target && e.target.tagName === 'BUTTON' ){
                 direccionPress(e.target.getAttribute("data-flecha"));
                 if(e.target.getAttribute("data-flecha") === 'left' || e.target.getAttribute("data-flecha") === 'right'){
@@ -419,10 +435,15 @@ if(encendido){
                 }
             }
         });
-        flechas.addEventListener('touchend', (e)=> direccionPress(e.target.getAttribute("data-flecha"))
-        );
+        flechas.addEventListener('touchend', (e)=> {
+            e.preventDefault();
+            e.stopPropagation();
+            direccionPress(e.target.getAttribute("data-flecha"))
+        });
     }else{
         flechas.addEventListener('mousedown', (e)=>{
+            e.preventDefault();
+            e.stopPropagation();
             if(e.target && e.target.tagName === 'BUTTON' ){
                 direccionPress(e.target.getAttribute("data-flecha"));
                 if(e.target.getAttribute("data-flecha") === 'left' || e.target.getAttribute("data-flecha") === 'right'){
@@ -433,7 +454,10 @@ if(encendido){
                 }
             }
         });
-        flechas.addEventListener('mouseup', (e)=> direccionPress(e.target.getAttribute("data-flecha"))
-        );
+        flechas.addEventListener('mouseup', (e)=> {
+            e.preventDefault();
+            e.stopPropagation();
+            direccionPress(e.target.getAttribute("data-flecha"))
+        });
     }
 }

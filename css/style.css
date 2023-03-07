@@ -230,7 +230,7 @@ body {
     --opacityValue2:.1;
 }
 
- .exponente::before{
+.exponente::before{
     content: '-88';
     font-size: 14px;
     position: absolute;
