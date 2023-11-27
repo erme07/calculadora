@@ -382,13 +382,13 @@ body {
     cursor:pointer;
     text-shadow: #ffffff 0.8px 0.8px 1px;
 }
-.credito{
+/* .credito{
     position:absolute;
     bottom:5px;
     left:5px;
     color: #000;
     font-size: 11px;
-}
+} */
 .mostrar{
     opacity:1;
 }
