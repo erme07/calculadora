@@ -23,6 +23,32 @@ let formulaBack='',formulaAux='',formulaAux2='', valorAns='',formulaDesplazada='
     error=false, posicionStorage=0, posStorAux=0, memoria=false, encendido=true, desplazamiento=false, 
     cursorInt=null,posCursor=0,contador=0, valorExp=0, datoCursor='';
 
+const mapa = Object.freeze({
+    multiplicacion: Object.freeze({
+        front: "×",
+        back: "*"
+    }),
+    division: Object.freeze({
+        front: "÷",
+        back: "/"
+    }),
+    resta: "-",
+    suma: "+",
+    punto: ".",
+    parentesisApertura: "(",
+    parentesisCierre: ")",
+    uno: "1",
+    dos: "2",
+    tres: "3",
+    cuatro: "4",
+    cinco: "5",
+    seis: "6",
+    siete: "7",
+    ocho: "8",
+    nueve: "9",
+    cero: "0"
+})
+
 
 function apagar(){
     memoria=false;
@@ -61,31 +87,21 @@ function encender(){
     flechaIzq.classList.remove("mostrar");
 }
 
-function limpiarFormula(){
+function limpiarFormula() {
+    operacion = '';
+    operacion_display = '';
     formula.innerHTML='';
     blink.innerHTML='_';
 }
 
-function eliminar(){
-    if(!igual && !error){
-        if(formula.innerHTML[(formula.innerHTML.length)-1] === 's'){
-            formulaAux=formula.innerHTML.slice(0,-3);
-            valorAns=formulaAux;
-            formulaAux='';
-            formulaAux=formula.innerHTML.slice(0,-3);
-            formula.innerHTML=formulaAux;
-            formulaAux='';
-            desplazarTexto();
-        }else{
-            formulaAux=formula.innerHTML.slice(0,-1);
-            valorAns=formulaAux;
-            formulaAux='';
-            formulaAux=formula.innerHTML.slice(0,-1);
-            formula.innerHTML=formulaAux;
-            formulaAux='';
-            desplazarTexto();
-        }
-    }
+const eliminar=()=>{
+    if(operacion_display[operacion_display.length - 1] === 's')
+        operacion_display = operacion_display.slice(0, -3)
+    else
+        operacion_display = operacion_display.slice(0, -1)
+    formula.innerHTML = operacion_display;
+    operacion=operacion.slice(0, -1);
+    checkDesborde();
 }
 
 function resetear(){
@@ -106,16 +122,24 @@ function stopInterval() {
     cursorInt = null;
 }
 
-function desplazarTexto(){
+const desbordeTrue = () => {
+    formula.classList.add('desplazar');
+    flechaIzq.classList.add('mostrar');
+    desplazamiento = true;
+}
+
+const desbordeFalse = () => {
+    formula.classList.remove('desplazar');
+    flechaIzq.classList.remove('mostrar');
+    desplazamiento = false;
+    //stopInterval();
+}
+
+const checkDesborde=()=>{
     if(!error && formula.innerHTML.length>13){
-        formula.classList.add('desplazar');
-        flechaIzq.classList.add('mostrar');
-        desplazamiento=true;
+        desbordeTrue();
     }else{
-        formula.classList.remove('desplazar');
-        flechaIzq.classList.remove('mostrar');
-        desplazamiento=false;
-        stopInterval();
+        desbordeFalse();
     }
 }
 
@@ -205,7 +229,7 @@ function errores(tipo){
     resultado.innerHTML='';
     error=true;
     flechasMemoria();
-    desplazarTexto();
+    checkDesborde();
 }
 
 function displayExpo(accion){
@@ -371,93 +395,212 @@ function ejecutar(){
     }
 }
 
-function isMobile() {
-    const toMatch = [
-        /Android/i,
-        /webOS/i,
-        /iPhone/i,
-        /iPad/i,
-        /iPod/i,
-        /BlackBerry/i,
-        /Windows Phone/i,
-        /Opera Mini/i,
-        /IEMobile/i
-    ];
 
-    return toMatch.some((toMatchItem) => {
-        return navigator.userAgent.match(toMatchItem);
-    });
+
+
+let operacion="", operacion_display="",ans=0;
+
+
+
+const validarEntrada = (valor) => {
+    if(valor in mapa){
+        if (valor === "multiplicacion" || valor === "division") {
+            operacion += mapa[valor].back;
+            operacion_display += mapa[valor].front;
+        } else {
+            operacion += mapa[valor];
+            operacion_display += mapa[valor];
+        }
+        formula.innerHTML = operacion_display;
+    } else
+        console.error("Haz modificado el mapa de valores");
 }
 
-if(encendido){
-    teclado.addEventListener('click', (e)=>{
-        e.preventDefault();
-        e.stopPropagation();
-        if(e.target && ( e.target.getAttribute("data-tipo")==='numero' || e.target.getAttribute("data-tipo") ==='operador')){
-            if(e.target.getAttribute("data-valor").length === 1 || e.target.getAttribute("data-valor") === 'Ans'){
-                if(e.target.getAttribute("data-tipo") ==='operador' && resultado.innerHTML!='0' && igual && e.target.getAttribute("data-valor") !='Ans'){
-                    igual=false;
-                    limpiarFormula();
-                    formula.innerHTML+='Ans'+ e.target.getAttribute("data-valor");
-                }else if(resultado.innerHTML!='0' && igual){
-                    limpiarFormula();
-                    flechasMemoria();
-                    igual=false;
-                    formula.innerHTML+=e.target.getAttribute("data-valor");
-                }else if(!error){
-                    formula.innerHTML+=e.target.getAttribute("data-valor");
-                }
-                desplazarTexto();
-            }
-        }else if(e.target.getAttribute("data-valor") === 'eliminar'){
-            eliminar();
-        }else if(e.target.getAttribute("data-valor") === 'reset'){
-            resetear();
-        }else if(e.target.getAttribute("data-valor") === 'operar'){
-            verificar();
-        }else if(e.target.getAttribute("data-valor") === 'off'){
-            apagar();
-        }else if(e.target.getAttribute("data-valor") === 'on'){
-            encender();
+const errorParentesis = (formula) => {
+    let balanceParentesis = 0;
+    let parentesisVacios = /\(\s*\)/; //expresion regular para encontrar parentesis vacios;
+    if (parentesisVacios.test(formula)) return true
+    formula = formula.split('');
+    for (let caracter of formula) {
+        if (caracter === ')') {
+            balanceParentesis--;
+            if (balanceParentesis === -1) return true;
         }
-    });
-    if(isMobile()){
-        flechas.addEventListener('touchstart', (e)=>{
-            e.preventDefault();
-            e.stopPropagation();
-            if(e.target && e.target.tagName === 'BUTTON' ){
-                direccionPress(e.target.getAttribute("data-flecha"));
-                if(e.target.getAttribute("data-flecha") === 'left' || e.target.getAttribute("data-flecha") === 'right'){
-                    // editarFormula(event.target.getAttribute("data-flecha")); 
-                    // Funcion que permite navegar sobre la formula, para editar o insertar nuevos elementos.
-                }else if(e.target.getAttribute("data-flecha") === 'up' || e.target.getAttribute("data-flecha") === 'down'){
-                    getMemoria(e.target.getAttribute("data-flecha"));
-                }
-            }
-        });
-        flechas.addEventListener('touchend', (e)=> {
-            e.preventDefault();
-            e.stopPropagation();
-            direccionPress(e.target.getAttribute("data-flecha"))
-        });
-    }else{
-        flechas.addEventListener('mousedown', (e)=>{
-            e.preventDefault();
-            e.stopPropagation();
-            if(e.target && e.target.tagName === 'BUTTON' ){
-                direccionPress(e.target.getAttribute("data-flecha"));
-                if(e.target.getAttribute("data-flecha") === 'left' || e.target.getAttribute("data-flecha") === 'right'){
-                    // editarFormula(event.target.getAttribute("data-flecha")); 
-                    // Funcion que permite navegar sobre la formula, para editar o insertar nuevos elementos.
-                }else if(e.target.getAttribute("data-flecha") === 'up' || e.target.getAttribute("data-flecha") === 'down'){
-                    getMemoria(e.target.getAttribute("data-flecha"));
-                }
-            }
-        });
-        flechas.addEventListener('mouseup', (e)=> {
-            e.preventDefault();
-            e.stopPropagation();
-            direccionPress(e.target.getAttribute("data-flecha"))
-        });
+        else if (caracter === '(') balanceParentesis++;
+    };
+    if (balanceParentesis === 0) return false
+    else return true
+}
+
+
+
+const operar = (formulaMath) => {
+    try {
+        let result;
+        result = math.evaluate(formulaMath);
+        result = math.format(result, { precision: 14 });
+        resultado.innerHTML = result;
+    } catch (error) {
+        formula.innerHTML = ' Sintax ERROR';
     }
 }
+
+
+
+// let expresion = '√81';
+// let resultado2 = math.evaluate(expresion);
+// resultado2 = math.format(resultado2, { precision: 14 });
+// console.log(resultado2);  // '5.8'
+
+document.addEventListener("click", (e) => {
+    if (e.target.getAttribute("data-tipo") === 'argumento' || e.target.getAttribute("data-tipo") === 'operador') {
+        validarEntrada(e.target.getAttribute("data-valor"))
+        checkDesborde();
+    }
+
+    else if (e.target.getAttribute("data-valor") === 'eliminar')
+        eliminar();
+    else if (e.target.getAttribute("data-valor") === 'reset')
+        resetear();
+    else if (e.target.getAttribute("data-valor") === 'operar')
+        //verificar();
+        operar(operacion);
+    // }else if(e.target.getAttribute("data-valor") === 'off'){
+    //     apagar();
+    // }else if(e.target.getAttribute("data-valor") === 'on'){
+    //     encender();
+    // }
+})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// function isMobile() {
+//     const toMatch = [
+//         /Android/i,
+//         /webOS/i,
+//         /iPhone/i,
+//         /iPad/i,
+//         /iPod/i,
+//         /BlackBerry/i,
+//         /Windows Phone/i,
+//         /Opera Mini/i,
+//         /IEMobile/i
+//     ];
+
+//     return toMatch.some((toMatchItem) => {
+//         return navigator.userAgent.match(toMatchItem);
+//     });
+// }
+
+
+// teclado.addEventListener('click', (e)=>{
+//     e.preventDefault();
+//     e.stopPropagation();
+//     if(e.target && ( e.target.getAttribute("data-tipo")==='numero' || e.target.getAttribute("data-tipo") ==='operador')){
+//         if(e.target.getAttribute("data-valor").length === 1 || e.target.getAttribute("data-valor") === 'Ans'){
+//             if(e.target.getAttribute("data-tipo") ==='operador' && resultado.innerHTML!='0' && igual && e.target.getAttribute("data-valor") !='Ans'){
+//                 igual=false;
+//                 limpiarFormula();
+//                 formula.innerHTML+='Ans'+ e.target.getAttribute("data-valor");
+//             }else if(resultado.innerHTML!='0' && igual){
+//                 limpiarFormula();
+//                 flechasMemoria();
+//                 igual=false;
+//                 formula.innerHTML+=e.target.getAttribute("data-valor");
+//             }else if(!error){
+//                 formula.innerHTML+=e.target.getAttribute("data-valor");
+//             }
+//             desplazarTexto();
+//         }
+//     }else if(e.target.getAttribute("data-valor") === 'eliminar'){
+//         eliminar();
+//     }else if(e.target.getAttribute("data-valor") === 'reset'){
+//         resetear();
+//     }else if(e.target.getAttribute("data-valor") === 'operar'){
+//         verificar();
+//     }else if(e.target.getAttribute("data-valor") === 'off'){
+//         apagar();
+//     }else if(e.target.getAttribute("data-valor") === 'on'){
+//         encender();
+//     }
+// });
+
+
+
+
+// if(isMobile()){
+//     flechas.addEventListener('touchstart', (e)=>{
+//         e.preventDefault();
+//         e.stopPropagation();
+//         if(e.target && e.target.tagName === 'BUTTON' ){
+//             direccionPress(e.target.getAttribute("data-flecha"));
+//             if(e.target.getAttribute("data-flecha") === 'left' || e.target.getAttribute("data-flecha") === 'right'){
+//                 // editarFormula(event.target.getAttribute("data-flecha")); 
+//                 // Funcion que permite navegar sobre la formula, para editar o insertar nuevos elementos.
+//             }else if(e.target.getAttribute("data-flecha") === 'up' || e.target.getAttribute("data-flecha") === 'down'){
+//                 getMemoria(e.target.getAttribute("data-flecha"));
+//             }
+//         }
+//     });
+//     flechas.addEventListener('touchend', (e)=> {
+//         e.preventDefault();
+//         e.stopPropagation();
+//         direccionPress(e.target.getAttribute("data-flecha"))
+//     });
+// }else{
+//     flechas.addEventListener('mousedown', (e)=>{
+//         e.preventDefault();
+//         e.stopPropagation();
+//         if(e.target && e.target.tagName === 'BUTTON' ){
+//             direccionPress(e.target.getAttribute("data-flecha"));
+//             if(e.target.getAttribute("data-flecha") === 'left' || e.target.getAttribute("data-flecha") === 'right'){
+//                 // editarFormula(event.target.getAttribute("data-flecha")); 
+//                 // Funcion que permite navegar sobre la formula, para editar o insertar nuevos elementos.
+//             }else if(e.target.getAttribute("data-flecha") === 'up' || e.target.getAttribute("data-flecha") === 'down'){
+//                 getMemoria(e.target.getAttribute("data-flecha"));
+//             }
+//         }
+//     });
+//     flechas.addEventListener('mouseup', (e)=> {
+//         e.preventDefault();
+//         e.stopPropagation();
+//         direccionPress(e.target.getAttribute("data-flecha"))
+//     });
+// }

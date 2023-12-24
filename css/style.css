@@ -127,7 +127,8 @@ body {
 .formula{
     overflow: hidden;
     margin-left:.8px;
-    white-space: nowrap;
+    /* white-space: nowrap; */
+    white-space: pre;
 }
 .desplazar{
     display: flex;
@@ -298,8 +299,7 @@ body {
     background-color: #919191;
 }
 
-[data-tipo="numero"], [data-tipo="operador"], [data-valor="operar"], [data-valor="reset"], [data-valor="eliminar"],
-.tecla_off button, .tecla_on button, .abrir_parent button, .cerrar_parent button {
+.button{
     display:flex;
     justify-content: center;
     align-items: center;
@@ -317,18 +317,17 @@ body {
     text-shadow: #ffffff .8px .8px 1px;
     cursor: pointer;
 }
-[data-valor="operar"]{
+.button--dark{
     height:73px;
     background-color:#7c6b5c;
 }
-[data-valor="reset"], [data-valor="eliminar"]{
+.button--red{
     background-color: #cb4718;
     text-shadow: #ffffffb6 .5px .5px 1px;
 }
 
 
-[data-tipo="numero"]:active, [data-tipo="operador"]:active, [data-valor="operar"]:active, [data-valor="reset"]:active, [data-valor="eliminar"]:active,
-.tecla_off button:active, .tecla_on button:active, .abrir_parent button:active, .cerrar_parent button:active{
+.button:active{
     box-shadow: inset 3px 3px 3px -2px rgba(34, 34, 34, 0.9),
     inset -3px -3px 3px -2px rgba(34,34,34,0.9)!important;
 }
