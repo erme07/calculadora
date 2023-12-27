@@ -2,11 +2,12 @@
 Practicas Html/CSS/Javascript - Erik Medina
 */
 const teclado = document.getElementById('teclado'),
-    formula = document.querySelector(".formula"),
+    $formula = document.querySelector(".formula"),
     blink = document.querySelector(".blink"),
-    resultado = document.getElementById("resultado"),
-    exponente = document.querySelector(".exponente"),
-    base = document.querySelector(".base"),
+    $resultado = document.getElementById("resultado"),
+    $exponente = document.querySelector(".exponente"),
+    $base = document.querySelector(".base"),
+    $on = document.querySelector("[data-valor='on']"),
     flechaIzq = document.querySelector(".flechaIzq"),
     flechaUp = document.querySelector(".flechaUp"),
     flechaDown =document.querySelector(".flechaDown"),
@@ -19,9 +20,53 @@ const storageFormula = [],
     storageResultado = [],
     storageExponente = [];
 
+//errores personalizados
+class InvalidValueError extends Error {
+    constructor(message = 'Haz introducido un valor no admitido') {
+        super(message);
+        this.name = "InvalidValueError";
+    }
+}
+class MathError extends Error {
+    constructor(message = '  Math ERROR') {
+        super(message);
+        this.name = "MathError";
+    }
+}
+
+//valores constantes
+const ENTEROMAX = 9.999999999e+99, ENTEROMIN = -ENTEROMAX, DECIMALMINPOSITIVO = 1e-99, DECIMALMINNEGATIVO = -DECIMALMINPOSITIVO;
+
+//modos - estados
+let modoExponencial = false, mostrandoError = false, mostrandoResultado = false, desborde = false;
+
+//variables
+let exponente, coeficiente, resultado;
+let operacion = "", operacion_display = "", ans = 0;
+
 let formulaBack='',formulaAux='',formulaAux2='', valorAns='',formulaDesplazada='', igual=false, 
-    error=false, posicionStorage=0, posStorAux=0, memoria=false, encendido=true, desplazamiento=false, 
-    cursorInt=null,posCursor=0,contador=0, valorExp=0, datoCursor='';
+    error=false, posicionStorage=0, posStorAux=0, memoria=false, encendido=true, 
+    cursorInt = null, posCursor = 0, contador = 0, valorExp = 0, datoCursor = '';
+    
+const keyMap = Object.freeze({
+    "0": "cero",
+    "1": "uno",
+    "2": "dos",
+    "3": "tres",
+    "4": "cuatro",
+    "5": "cinco",
+    "6": "seis",
+    "7": "siete",
+    "8": "ocho",
+    "9": "nueve",
+    "(": "parentesisApertura",
+    ")": "parentesisCierre",
+    ".": "punto",
+    "+": "suma",
+    "-": "resta",
+    "*": "multiplicacion",
+    "/": "division"
+});
 
 const mapa = Object.freeze({
     multiplicacion: Object.freeze({
@@ -50,38 +95,45 @@ const mapa = Object.freeze({
 })
 
 
+
 function apagar(){
-    memoria=false;
+    //memoria=false;
+    document.removeEventListener("keydown", keyDownFunction);
+    document.removeEventListener("keyup", keyUpFunction);
+    document.removeEventListener("click", clickFunction);
     resetear();
-    resultado.innerHTML='';
-    formula.innerHTML='';
+    $resultado.innerHTML='';
+    $formula.innerHTML='';
     blink.innerHTML='';
     encendido=false;
-    resultado.classList.add("ocultar");
+    $resultado.classList.add("ocultar");
     contenedorFormula.classList.add("ocultar");
     flechaDown.classList.add("ocultar");
     flechaRight.classList.add("ocultar");
     flechaUp.classList.add("ocultar");
     flechaIzq.classList.add("ocultar");
-    base.classList.add("ocultar");
-    exponente.classList.add("ocultar");
+    $base.classList.add("ocultar");
+    $exponente.classList.add("ocultar");
 }
 
-function encender(){
+function encender() {
+    document.addEventListener("keydown", keyDownFunction);
+    document.addEventListener("keyup", keyUpFunction);
+    document.addEventListener("click", clickFunction);
     memoria=false;
     posicionStorage=0;
     posStorAux=0;
     encendido=true;
-    resultado.innerHTML='0';
+    $resultado.innerHTML='0';
     limpiarFormula();
-    resultado.classList.remove("ocultar");
+    $resultado.classList.remove("ocultar");
     contenedorFormula.classList.remove("ocultar");
     flechaDown.classList.remove("ocultar");
     flechaRight.classList.remove("ocultar");
     flechaUp.classList.remove("ocultar");
     flechaIzq.classList.remove("ocultar");
-    base.classList.remove("ocultar");
-    exponente.classList.remove("ocultar");
+    $base.classList.remove("ocultar");
+    $exponente.classList.remove("ocultar");
     flechaRight.classList.remove("mostrar");
     flechaUp.classList.remove("mostrar");
     flechaIzq.classList.remove("mostrar");
@@ -90,7 +142,7 @@ function encender(){
 function limpiarFormula() {
     operacion = '';
     operacion_display = '';
-    formula.innerHTML='';
+    $formula.innerHTML= operacion_display;
     blink.innerHTML='_';
 }
 
@@ -99,15 +151,19 @@ const eliminar=()=>{
         operacion_display = operacion_display.slice(0, -3)
     else
         operacion_display = operacion_display.slice(0, -1)
-    formula.innerHTML = operacion_display;
+    $formula.innerHTML = operacion_display;
     operacion=operacion.slice(0, -1);
     checkDesborde();
 }
 
-function resetear(){
+function resetear() {
+    console.clear();
     limpiarFormula();
-    formulaBack='';
-    resultado.innerHTML='0';
+    //formulaBack='';
+    operacion = '';
+    operacion_display = '';
+    resultado = 0;
+    $resultado.innerHTML = resultado;
     displayExpo('ocultar');
     flechaIzq.classList.remove('mostrar');
     error=false;
@@ -123,20 +179,20 @@ function stopInterval() {
 }
 
 const desbordeTrue = () => {
-    formula.classList.add('desplazar');
+    $formula.classList.add('formula--desbordada');
     flechaIzq.classList.add('mostrar');
-    desplazamiento = true;
+    desborde = true;
 }
 
 const desbordeFalse = () => {
-    formula.classList.remove('desplazar');
+    $formula.classList.remove('formula--desbordada');
     flechaIzq.classList.remove('mostrar');
-    desplazamiento = false;
+    desborde = false;
     //stopInterval();
 }
 
 const checkDesborde=()=>{
-    if(!error && formula.innerHTML.length>13){
+    if(!error && operacion_display>13){
         desbordeTrue();
     }else{
         desbordeFalse();
@@ -144,10 +200,10 @@ const checkDesborde=()=>{
 }
 
 function flashCursor() {
-    if(formula.innerHTML === formulaDesplazada){
-        formula.innerHTML=formulaAux2
+    if($formula.innerHTML === formulaDesplazada){
+        $formula.innerHTML=formulaAux2
     }else{
-        formula.innerHTML=formulaDesplazada;
+        $formula.innerHTML=formulaDesplazada;
     }
 }
 
@@ -176,70 +232,59 @@ function direccionPress(direccion){
 
 function editarFormula(direccion){//pendiente de desarrollo
 
-    if(direccion === 'left' && desplazamiento){ 
+    if(direccion === 'left' && desborde){ 
         blink.innerHTML='';
         if(datoCursor===''){
-            formulaAux2=formula.innerHTML;
-            formulaDesplazada=formula.innerHTML.split('');
+            formulaAux2=$formula.innerHTML;
+            formulaDesplazada=$formula.innerHTML.split('');
         }else{
             formulaDesplazada=formulaDesplazada.split('');
             formulaDesplazada[posCursor]=datoCursor;
         }
         contador++;
-        posCursor=formula.innerHTML.length-contador;
+        posCursor=$formula.innerHTML.length-contador;
         
-        datoCursor=formula.innerHTML[posCursor]
+        datoCursor=$formula.innerHTML[posCursor]
         
         formulaDesplazada[posCursor]='_'
         formulaDesplazada=formulaDesplazada.join('');
         stopInterval();
-        formula.innerHTML=formulaDesplazada;
+        $formula.innerHTML=formulaDesplazada;
         cursorInt = setInterval(flashCursor, 450);
         
-    }else if(direccion === 'right' && desplazamiento){
+    }else if(direccion === 'right' && desborde){
         blink.innerHTML='';
         if(datoCursor===''){
-            formulaAux2=formula.innerHTML;
-            formulaDesplazada=formula.innerHTML.split('');
+            formulaAux2=$formula.innerHTML;
+            formulaDesplazada=$formula.innerHTML.split('');
         }else{
             formulaDesplazada=formulaDesplazada.split('');
             formulaDesplazada[posCursor]=datoCursor;
             
         }
         contador--;
-        posCursor=formula.innerHTML.length-contador;
+        posCursor=$formula.innerHTML.length-contador;
         
-        datoCursor=formula.innerHTML[posCursor]
+        datoCursor=$formula.innerHTML[posCursor]
         
         formulaDesplazada[posCursor]='_'
         formulaDesplazada=formulaDesplazada.join('');
         stopInterval();
-        formula.innerHTML=formulaDesplazada;
+        $formula.innerHTML=formulaDesplazada;
         cursorInt = setInterval(flashCursor, 450);
     }
 }
 
-function errores(tipo){
-    if(tipo === 'sintax'){
-        formula.innerHTML='&nbsp;Sintax Error';
-    }else if(tipo === 'math'){
-        formula.innerHTML='&nbsp;&nbsp;Math Error';
-    }
-    blink.innerHTML='';
-    resultado.innerHTML='';
-    error=true;
-    flechasMemoria();
-    checkDesborde();
-}
+
 
 function displayExpo(accion){
     if(accion==='mostrar'){
-        base.classList.add("mostrar")
-        exponente.innerHTML=valorExp;
+        $base.classList.add("mostrar")
+        $exponente.innerHTML=valorExp;
         valorExp=0;
     }else if(accion === 'ocultar'){
-        base.classList.remove("mostrar");
-        exponente.innerHTML='';
+        $base.classList.remove("mostrar");
+        $exponente.innerHTML='';
     }
 }
 
@@ -259,7 +304,7 @@ function notacionExpo(result){
     }else if(result.includes('e')){
         valorAns=result;
         resultAux= result.split('e');
-        resultado.innerHTML=result[0];
+        $resultado.innerHTML=result[0];
         if(Number(resultAux[1])>-10 && Number(resultAux[1])<0){
             valorExp='-0'+ Number(resultAux[1])*-1;
         }else if(Number(resultAux[1])>0 && Number(resultAux[1])<10){
@@ -273,20 +318,20 @@ function notacionExpo(result){
         resultAux=resultAux.substring(0,11);
         resultAux=eval(resultAux); //usando eval se eliminan los ceros innecesarios
         valorAns=resultAux+'e'+valorExp;
-        resultado.innerHTML=resultAux;
+        $resultado.innerHTML=resultAux;
     }
 }
 
 function setMemoria(){
     if(storageFormula.length<8){
-        posicionStorage=storageFormula.push(formula.innerHTML)
-        storageResultado.push(resultado.innerHTML);
+        posicionStorage=storageFormula.push($formula.innerHTML)
+        storageResultado.push($resultado.innerHTML);
         storageExponente.push(valorExp);
         posStorAux=posicionStorage-1;
     }else if(storageFormula.length === 8){
-        storageFormula.push(formula.innerHTML)
+        storageFormula.push($formula.innerHTML)
         storageFormula.shift()
-        storageResultado.push(resultado.innerHTML)
+        storageResultado.push($resultado.innerHTML)
         storageResultado.shift();
         storageExponente.push(valorExp);
         storageExponente.shift();
@@ -307,8 +352,8 @@ function getMemoria(direccion){
             posStorAux++;
         }
         blink.innerHTML='';
-        formula.innerHTML=storageFormula[posStorAux];
-        resultado.innerHTML=storageResultado[posStorAux];
+        $formula.innerHTML=storageFormula[posStorAux];
+        $resultado.innerHTML=storageResultado[posStorAux];
         if(storageExponente[posStorAux]==0){
             displayExpo('ocultar');
         }else{
@@ -328,47 +373,7 @@ function getMemoria(direccion){
     }
 }
 
-function verificar(){
-    let aperturaParentesis=0, cerrarParentesis=0;
-    const valoresAdmitidos = /Ans|e|\(|\)|\.|[0-9]|\+|\-|×|÷/g;
-    const errorSintaxis = /(\.\.+)|\.[0-9]+\.|\.\(|\)\.|(÷÷+)|(××+)|(\)[0-9])/g // '..','//','**' error de sintaxis
-    const errorSintaxisOperadores = /((?<![0-9]|\))[\/\*])|([\/\*](?![0-9]|\(|\-|\+|.))/
-    const listaOperadores = ['+','-','*','/'];
-    const quitarRepetidos = [/\+0+(?!$)/,/\-0+(?!$)/,/\*0+(?!$)/,/\/0+(?!$)/];
 
-    if(valoresAdmitidos.test(formula.innerHTML)){//eval() solo recibirá los valores que defino como permitidos
-        formulaBack=formula.innerHTML;
-        //reemplazo los operadores por su valor permitido para eval()
-        formulaBack=formulaBack.replace(/×/g,'*');
-        formulaBack=formulaBack.replace(/÷/g,'/');
-        formulaBack=formulaBack.replace(/Ans/g,valorAns);
-        //quito los ceros a la izquierda para que no se tomen como numeros octales.
-        while(formulaBack[0]=='0'){formulaBack=formulaBack.substring(1,formulaBack.length);}
-        listaOperadores.forEach((e,i) => formulaBack=formulaBack.replace(quitarRepetidos[i],listaOperadores[i]))
-        
-        formulaBack.split('').forEach((e)=>{ 
-            if(e=='(')aperturaParentesis++;
-            if(e==')')cerrarParentesis++;
-            //si no coinciden la cantidad de parentesis de apertura y cierre entonces hay un error de sintaxis
-        });
-
-        if(formulaBack.match(/(\-[+-]+)|(\+[-+]+)/g)!=null){
-            formulaBack=formulaBack.replace(/\-{2}/g ,'+');
-            formulaBack=formulaBack.replace(/\++/g, '+');
-        }// ya que eval() no lo admite, proceso la regla de los signos previamente.
-
-        //agrego la multiplicacion para expresiones del tipo a(bc)
-        formulaBack=formulaBack.replace(/(?<=[0-9])\(/, '*(');
-
-        if((errorSintaxis.test(formulaBack)) || (aperturaParentesis!=cerrarParentesis) || formulaBack.endsWith('+') ||
-        formulaBack.endsWith('-') || errorSintaxisOperadores.test(formulaBack) || /\(\)/.test(formulaBack)|| 
-        formulaBack.endsWith('+') || formulaBack.endsWith('-')){
-            errores('sintax');
-        }else{
-            ejecutar();
-        }
-    }
-}
 
 function ejecutar(){
     let result;
@@ -386,7 +391,7 @@ function ejecutar(){
         displayExpo('mostrar');
         valorExp=0;
     }else{
-        resultado.innerHTML = result;
+        $resultado.innerHTML = result;
         valorAns=result;
         igual=true;
         blink.innerHTML='';
@@ -395,10 +400,6 @@ function ejecutar(){
     }
 }
 
-
-
-
-let operacion="", operacion_display="",ans=0;
 
 
 
@@ -411,68 +412,140 @@ const validarEntrada = (valor) => {
             operacion += mapa[valor];
             operacion_display += mapa[valor];
         }
-        formula.innerHTML = operacion_display;
+        $formula.innerHTML = operacion_display;
     } else
         console.error("Haz modificado el mapa de valores");
 }
 
-const errorParentesis = (formula) => {
-    let balanceParentesis = 0;
-    let parentesisVacios = /\(\s*\)/; //expresion regular para encontrar parentesis vacios;
-    if (parentesisVacios.test(formula)) return true
-    formula = formula.split('');
-    for (let caracter of formula) {
-        if (caracter === ')') {
-            balanceParentesis--;
-            if (balanceParentesis === -1) return true;
-        }
-        else if (caracter === '(') balanceParentesis++;
-    };
-    if (balanceParentesis === 0) return false
-    else return true
+
+const mostrarError = (tipoError) => {
+    $formula.innerHTML = tipoError.message;
+    $resultado.innerHTML = '';
+    console.error(tipoError.message);
+}
+
+const manejarError = (error) => {
+    if (error.constructor.name === 'SyntaxError') {
+        error.message = ' Sintax ERROR';
+        mostrarError(error);
+    }
+    else if (error.constructor.name === 'InvalidValueError')
+        console.error(error)
+    else if (error.constructor.name === 'MathError')
+        mostrarError(error);
 }
 
 
-
-const operar = (formulaMath) => {
-    try {
-        let result;
-        result = math.evaluate(formulaMath);
-        result = math.format(result, { precision: 14 });
-        resultado.innerHTML = result;
-    } catch (error) {
-        formula.innerHTML = ' Sintax ERROR';
+const validarOperacion = () => {
+    const valoresAdmitidos = /^(Ans|e|pi|log|\(|\)|\.|[0-9]|\+|\-|×|\*|\/|÷)*$/;
+    if (!valoresAdmitidos.test(operacion) || !valoresAdmitidos.test(operacion_display)) {
+        throw new InvalidValueError();
     }
 }
 
+const notacionExponencial = (result) => { 
+    if (Number.isInteger(result)) {
+        result = math.format(result, { notation: 'exponential', precision: 11 })
+        exponente = result.split('e')[1];
+        coeficiente = result.split('e')[0];
+        coeficiente = coeficiente.substring(0, 11);
+        return coeficiente;
+    }
+}
 
+const isExponecial = (result) => {
+    if (!Number.isInteger(result) && math.format(result, { notation: 'fixed' }).length > 11) 
+        return true
+    else if (Number.isInteger(result) && math.format(result, { notation: 'fixed' }).length > 10)
+        return true
+    else
+        return false;
+}
 
-// let expresion = '√81';
-// let resultado2 = math.evaluate(expresion);
-// resultado2 = math.format(resultado2, { precision: 14 });
-// console.log(resultado2);  // '5.8'
+const mostrarNotacionExponencial = () => { 
+    $base.classList.add("mostrar")
+    $exponente.innerHTML = exponente;
+}
 
-document.addEventListener("click", (e) => {
+const analizarResultado = (result) => {
+    if (result === 'Infinity')
+        throw new MathError();
+    if (result > ENTEROMAX || result < ENTEROMIN) {
+        throw new MathError();
+    }
+    if (isExponecial(result)) {
+        console.log("es exponencial")
+        modoExponencial = true;
+        mostrarNotacionExponencial();
+        result = notacionExponencial(result);
+    }
+    //console.log(result.toExponential(9));
+    $resultado.innerHTML = result;
+    
+}
+
+const operar = (formulaMath) => {
+    try {
+        validarOperacion();
+        let result;
+        result = math.evaluate(formulaMath);
+        result = math.format(result, { precision: 14 });
+        result = math.evaluate(result);
+        analizarResultado(result);
+        
+    } catch (error) {
+        manejarError(error);
+    }
+}
+
+const clickFunction = (e) => {
     if (e.target.getAttribute("data-tipo") === 'argumento' || e.target.getAttribute("data-tipo") === 'operador') {
         validarEntrada(e.target.getAttribute("data-valor"))
         checkDesborde();
     }
-
     else if (e.target.getAttribute("data-valor") === 'eliminar')
         eliminar();
     else if (e.target.getAttribute("data-valor") === 'reset')
         resetear();
     else if (e.target.getAttribute("data-valor") === 'operar')
-        //verificar();
         operar(operacion);
-    // }else if(e.target.getAttribute("data-valor") === 'off'){
-    //     apagar();
-    // }else if(e.target.getAttribute("data-valor") === 'on'){
-    //     encender();
-    // }
-})
+    else if (e.target.getAttribute("data-valor") === 'off')
+        apagar();
+    else if (e.target.getAttribute("data-valor") === 'on')
+        encender();
+}
 
+const keyDownFunction = (event) => {
+    if (event.key in keyMap) {
+        document.querySelector(`[data-valor='${keyMap[event.key]}']`).classList.add("button--active");
+        validarEntrada(keyMap[event.key]);
+        checkDesborde();
+    } else if (event.key === "Enter") {
+        document.querySelector("[data-valor='operar']").classList.add("button--active");
+        operar(operacion)
+    } else if (event.key === "Backspace") {
+        document.querySelector("[data-valor='eliminar']").classList.add("button--active");
+        eliminar();
+    } else if (event.key === "Escape") {
+        document.querySelector("[data-valor='reset']").classList.add("button--active");
+        resetear();
+    }
+}
 
+const keyUpFunction = (event) => {
+    if (event.key in keyMap)
+        document.querySelector(`[data-valor='${keyMap[event.key]}']`).classList.remove("button--active");
+    else if (event.key === "Enter")
+        document.querySelector("[data-valor='operar']").classList.remove("button--active");
+    else if (event.key === "Backspace")
+        document.querySelector("[data-valor='eliminar']").classList.remove("button--active");
+    else if (event.key === "Escape")
+        document.querySelector("[data-valor='reset']").classList.remove("button--active");
+}
+
+document.addEventListener("click", clickFunction)
+document.addEventListener("keydown", keyDownFunction);
+document.addEventListener("keyup", keyUpFunction);
 
 
 

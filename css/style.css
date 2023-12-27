@@ -130,19 +130,18 @@ body {
     /* white-space: nowrap; */
     white-space: pre;
 }
-.desplazar{
+.formula--desbordada{
     display: flex;
     justify-content: flex-end;
 }
-.blink{
-    animation: parpadeo 1s linear infinite;
+.blink {
+    animation: parpadeo 1s steps(1) infinite;
 }
-@keyframes parpadeo{
-    0%{opacity: 1;}
-    20%{opacity: 0;}
-    70%{opacity:1;}
-    100%{opacity: 1;}
-    }
+
+@keyframes parpadeo {
+    0% { visibility: visible; }
+    60% { visibility: hidden; }
+}
 .pantalla #resultado{
     --opacityValue: .06;
     font-family: ds-digital;
@@ -328,6 +327,10 @@ body {
 
 
 .button:active{
+    box-shadow: inset 3px 3px 3px -2px rgba(34, 34, 34, 0.9),
+    inset -3px -3px 3px -2px rgba(34,34,34,0.9)!important;
+}
+.button--active{
     box-shadow: inset 3px 3px 3px -2px rgba(34, 34, 34, 0.9),
     inset -3px -3px 3px -2px rgba(34,34,34,0.9)!important;
 }
