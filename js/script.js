@@ -3,7 +3,7 @@ Practicas Html/CSS/Javascript - Erik Medina
 */
 const teclado = document.getElementById('teclado'),
     $formula = document.querySelector(".formula"),
-    blink = document.querySelector(".blink"),
+    $blink = document.getElementById("blink"),
     $resultado = document.getElementById("resultado"),
     $exponente = document.querySelector(".exponente"),
     $base = document.querySelector(".base"),
@@ -14,11 +14,13 @@ const teclado = document.getElementById('teclado'),
     flechaRight = document.querySelector(".flechaRight"),
     contenedorFormula = document.querySelector('.contenedorFormula'),
     padDireccional = document.querySelectorAll(".navLeft, .navRight, .navUp, .navDown"),
-    flechas = document.querySelector(".flechas");
+    flechas = document.getElementById("flechas");
 
-const storageFormula = [],
-    storageResultado = [],
-    storageExponente = [];
+// const storageFormula = [],
+//     storageResultado = [],
+//     storageExponente = [];
+
+const memoriaOperaciones = []
 
 //errores personalizados
 class InvalidValueError extends Error {
@@ -35,37 +37,41 @@ class MathError extends Error {
 }
 
 //valores constantes
-const ENTEROMAX = 9.999999999e+99, ENTEROMIN = -ENTEROMAX, DECIMALMINPOSITIVO = 1e-99, DECIMALMINNEGATIVO = -DECIMALMINPOSITIVO;
+const ENTEROMAX = 9.999999999e+99, ENTEROMIN = -ENTEROMAX, DECIMALMINPOSITIVO = 1e-99, DECIMALMINNEGATIVO = -DECIMALMINPOSITIVO, ESPACIO_MEMORIA=8;
 
 //modos - estados
-let modoExponencial = false, mostrandoError = false, mostrandoResultado = false, desborde = false;
+let modoExponencial = false, mostrandoError = false, mostrandoResultado = false, modoLecturaMemoria = false, modoEdicion = false, desborde = false, presionandoDireccional = false;
 
 //variables
-let exponente, coeficiente, resultado;
+let exponente, coeficiente, resultado=0;
 let operacion = "", operacion_display = "", ans = 0;
+let posicionMemoria = -1, posicionCursor = 0;
 
-let formulaBack='',formulaAux='',formulaAux2='', valorAns='',formulaDesplazada='', igual=false, 
-    error=false, posicionStorage=0, posStorAux=0, memoria=false, encendido=true, 
-    cursorInt = null, posCursor = 0, contador = 0, valorExp = 0, datoCursor = '';
+
+
     
 const keyMap = Object.freeze({
-    "0": "cero",
-    "1": "uno",
-    "2": "dos",
-    "3": "tres",
-    "4": "cuatro",
-    "5": "cinco",
-    "6": "seis",
-    "7": "siete",
-    "8": "ocho",
-    "9": "nueve",
-    "(": "parentesisApertura",
-    ")": "parentesisCierre",
-    ".": "punto",
-    "+": "suma",
-    "-": "resta",
-    "*": "multiplicacion",
-    "/": "division"
+    argumentos: Object.freeze({
+        "0": "cero",
+        "1": "uno",
+        "2": "dos",
+        "3": "tres",
+        "4": "cuatro",
+        "5": "cinco",
+        "6": "seis",
+        "7": "siete",
+        "8": "ocho",
+        "9": "nueve",
+        "(": "parentesisApertura",
+        ")": "parentesisCierre",
+        ".": "punto",
+    }),
+    operadores: Object.freeze({
+        "+": "suma",
+        "-": "resta",
+        "*": "multiplicacion",
+        "/": "division"
+    })
 });
 
 const mapa = Object.freeze({
@@ -82,6 +88,7 @@ const mapa = Object.freeze({
     punto: ".",
     parentesisApertura: "(",
     parentesisCierre: ")",
+    ans: "Ans",
     uno: "1",
     dos: "2",
     tres: "3",
@@ -102,9 +109,12 @@ function apagar(){
     document.removeEventListener("keyup", keyUpFunction);
     document.removeEventListener("click", clickFunction);
     resetear();
+    posicionMemoria = -1;
+    memoriaOperaciones.length = 0;
     $resultado.innerHTML='';
     $formula.innerHTML='';
-    blink.innerHTML='';
+    $blink.innerHTML = '';
+    $blink.classList.remove("blink");
     encendido=false;
     $resultado.classList.add("ocultar");
     contenedorFormula.classList.add("ocultar");
@@ -120,7 +130,9 @@ function encender() {
     document.addEventListener("keydown", keyDownFunction);
     document.addEventListener("keyup", keyUpFunction);
     document.addEventListener("click", clickFunction);
-    memoria=false;
+    //memoria=false;
+    posicionMemoria = -1;
+    memoriaOperaciones.length = 0;
     posicionStorage=0;
     posStorAux=0;
     encendido=true;
@@ -139,20 +151,26 @@ function encender() {
     flechaIzq.classList.remove("mostrar");
 }
 
-function limpiarFormula() {
+const limpiarFormula = () => {
     operacion = '';
     operacion_display = '';
     $formula.innerHTML= operacion_display;
-    blink.innerHTML='_';
+    $blink.innerHTML = '_';
+    $blink.classList.add("blink");
 }
 
-const eliminar=()=>{
+const eliminar = () => {
     if(operacion_display[operacion_display.length - 1] === 's')
         operacion_display = operacion_display.slice(0, -3)
     else
         operacion_display = operacion_display.slice(0, -1)
+    if (operacion[operacion.length - 1] === ' ')
+        operacion = operacion.slice(0, -5);
+    else
+        operacion = operacion.slice(0, -1);
     $formula.innerHTML = operacion_display;
-    operacion=operacion.slice(0, -1);
+    $blink.classList.remove("blink");
+    setTimeout(() => { $blink.classList.add("blink"); },20)
     checkDesborde();
 }
 
@@ -160,41 +178,58 @@ function resetear() {
     console.clear();
     limpiarFormula();
     //formulaBack='';
-    operacion = '';
-    operacion_display = '';
     resultado = 0;
     $resultado.innerHTML = resultado;
-    displayExpo('ocultar');
+    mostrandoResultado = false;
+    modoExponencial = false;
+    mostrandoError = false;
+    desborde = false;
+    $exponente.innerHTML = '';
+    $base.classList.remove("base--visible");
+
+    //displayExpo('ocultar');
     flechaIzq.classList.remove('mostrar');
+    flechaRight.classList.remove('mostrar');
     error=false;
     igual=false;
-    flechasMemoria();
-    stopInterval();
+    //flechasMemoria();
+    modoLecturaMemoria = false;
+    posicionMemoria = -1;
+    manejarIndicadoresMemoria();
 }
 
-function stopInterval() {
-    clearInterval(cursorInt);
-    // liberar nuestro inervalId de la variable
-    cursorInt = null;
-}
 
 const desbordeTrue = () => {
     $formula.classList.add('formula--desbordada');
     flechaIzq.classList.add('mostrar');
     desborde = true;
 }
+const desbordeLeft = () => { 
+    $formula.classList.add('formula--desbordada');
+    flechaIzq.classList.add('mostrar');
+    desborde = true;
+}
+
+const desbordeRight = () => { 
+    $formula.classList.remove('formula--desbordada');
+    flechaRight.classList.add('mostrar');
+    flechaIzq.classList.remove('mostrar');
+    desborde = true;
+}
 
 const desbordeFalse = () => {
     $formula.classList.remove('formula--desbordada');
     flechaIzq.classList.remove('mostrar');
+    flechaRight.classList.remove('mostrar');
     desborde = false;
-    //stopInterval();
 }
 
 const checkDesborde=()=>{
-    if(!error && operacion_display>13){
-        desbordeTrue();
-    }else{
+    if (operacion_display.toString().length > 13 && (mostrandoResultado || modoLecturaMemoria)){
+        desbordeRight();
+    } else if (operacion_display.toString().length > 13 && !mostrandoResultado && !modoLecturaMemoria) {
+        desbordeLeft();
+    }else {
         desbordeFalse();
     }
 }
@@ -207,15 +242,6 @@ function flashCursor() {
     }
 }
 
-function flechasMemoria(){
-    posStorAux=posicionStorage;
-    if(memoria && !error){
-        flechaUp.classList.add("mostrar");
-    }else {
-        flechaUp.classList.remove("mostrar");
-    }
-    flechaDown.classList.remove("mostrar");
-}
 
 function direccionPress(direccion){
     if(direccion==='right'){
@@ -233,7 +259,7 @@ function direccionPress(direccion){
 function editarFormula(direccion){//pendiente de desarrollo
 
     if(direccion === 'left' && desborde){ 
-        blink.innerHTML='';
+        $blink.innerHTML='';
         if(datoCursor===''){
             formulaAux2=$formula.innerHTML;
             formulaDesplazada=$formula.innerHTML.split('');
@@ -253,7 +279,7 @@ function editarFormula(direccion){//pendiente de desarrollo
         cursorInt = setInterval(flashCursor, 450);
         
     }else if(direccion === 'right' && desborde){
-        blink.innerHTML='';
+        $blink.innerHTML='';
         if(datoCursor===''){
             formulaAux2=$formula.innerHTML;
             formulaDesplazada=$formula.innerHTML.split('');
@@ -277,130 +303,92 @@ function editarFormula(direccion){//pendiente de desarrollo
 
 
 
-function displayExpo(accion){
-    if(accion==='mostrar'){
-        $base.classList.add("mostrar")
-        $exponente.innerHTML=valorExp;
-        valorExp=0;
-    }else if(accion === 'ocultar'){
-        $base.classList.remove("mostrar");
-        $exponente.innerHTML='';
-    }
-}
-
-function notacionExpo(result){
-    result=result.toString();
-    let resultAux='';
-    if(result.includes('.')){
-        //pendiente desarrollo de comportamiento para exponentes negativos
-        if(result[0]=='0'){
-            resultAux=result.split('.');
-        }else{
-            resultAux=result.substring(0,11);
-            if(!resultAux.includes('.') || resultAux[resultAux.length-1]=='.'){
-                resultAux=resultAux.substring(0,10);
+const escribirMemoria = () => {
+    let elemento = ({
+        operacion: operacion,
+        operacion_display: operacion_display,
+        resultado: resultado
+    });
+    if (modoExponencial) {
+        elemento.exponencial ={
+                coeficiente: coeficiente,
+                exponente: exponente
             }
-        }
-    }else if(result.includes('e')){
-        valorAns=result;
-        resultAux= result.split('e');
-        $resultado.innerHTML=result[0];
-        if(Number(resultAux[1])>-10 && Number(resultAux[1])<0){
-            valorExp='-0'+ Number(resultAux[1])*-1;
-        }else if(Number(resultAux[1])>0 && Number(resultAux[1])<10){
-            valorExp='0'+ Number(resultAux[1])
-        }else{
-            valorExp=resultAux[1];
-        }
-    }else{
-        valorExp=result.length-1;
-        resultAux=result[0]+'.'+result.substring(1,result.length);
-        resultAux=resultAux.substring(0,11);
-        resultAux=eval(resultAux); //usando eval se eliminan los ceros innecesarios
-        valorAns=resultAux+'e'+valorExp;
-        $resultado.innerHTML=resultAux;
+    }
+    if (memoriaOperaciones.length < ESPACIO_MEMORIA)
+        memoriaOperaciones.push(elemento);
+    else if (memoriaOperaciones.length === ESPACIO_MEMORIA) {
+        memoriaOperaciones.shift();
+        memoriaOperaciones.push(elemento);
+    }
+    flechaUp.classList.add("mostrar");
+}
+
+const manejarIndicadoresMemoria = () => {
+    flechaDown.classList.add("mostrar");
+    flechaUp.classList.add("mostrar");
+    if (posicionMemoria === 0)
+        flechaUp.classList.remove("mostrar");
+    else if (posicionMemoria === memoriaOperaciones.length - 1 && memoriaOperaciones.length)
+        flechaDown.classList.remove("mostrar");
+    if (posicionMemoria === -1 && !memoriaOperaciones.length) {
+        flechaDown.classList.remove("mostrar");
+        flechaUp.classList.remove("mostrar");
+    }else if(posicionMemoria === -1 && memoriaOperaciones.length) {
+        flechaDown.classList.remove("mostrar");
     }
 }
 
-function setMemoria(){
-    if(storageFormula.length<8){
-        posicionStorage=storageFormula.push($formula.innerHTML)
-        storageResultado.push($resultado.innerHTML);
-        storageExponente.push(valorExp);
-        posStorAux=posicionStorage-1;
-    }else if(storageFormula.length === 8){
-        storageFormula.push($formula.innerHTML)
-        storageFormula.shift()
-        storageResultado.push($resultado.innerHTML)
-        storageResultado.shift();
-        storageExponente.push(valorExp);
-        storageExponente.shift();
-        posicionStorage=storageFormula.length;
-        posStorAux=posicionStorage-1;
+const leerMemoria = () => {
+    let elemento = memoriaOperaciones[posicionMemoria]
+    operacion = elemento.operacion;
+    operacion_display = elemento.operacion_display;
+    resultado = elemento.resultado;
+    ans = resultado;
+    isExponencial(math.evaluate(resultado));
+    if (modoExponencial) {
+        coeficiente = elemento.exponencial.coeficiente;
+        exponente = elemento.exponencial.exponente;
+        mostrarNotacionExponencial();
+    } else {
+        ocultarNotacionExponencial();
+        $resultado.innerHTML = resultado;
     }
-    if(storageFormula.length!=0){
-        flechaUp.classList.add("mostrar");
-        memoria=true;
-    }
-}
-
-function getMemoria(direccion){
-    if(memoria){
-        if(direccion ==='up' && posStorAux>=1){
-            posStorAux--;
-        }else if(direccion === 'down' && posStorAux<=posicionStorage-2){
-            posStorAux++;
-        }
-        blink.innerHTML='';
-        $formula.innerHTML=storageFormula[posStorAux];
-        $resultado.innerHTML=storageResultado[posStorAux];
-        if(storageExponente[posStorAux]==0){
-            displayExpo('ocultar');
-        }else{
-            valorExp=storageExponente[posStorAux]
-            displayExpo('mostrar');
-        }
-        if(posStorAux==0){
-            flechaUp.classList.remove("mostrar");
-        }else{
-            flechaUp.classList.add("mostrar");
-        }
-        if(posStorAux<posicionStorage-1){
-            flechaDown.classList.add("mostrar");
-        }else if(posStorAux==posicionStorage-1){
-            flechaDown.classList.remove("mostrar");
-        }
-    }
+    $formula.innerHTML = operacion_display;
+    mostrandoResultado = false;
+    checkDesborde();
 }
 
 
-
-function ejecutar(){
-    let result;
-    let numeroMax=999999999999999;
-    let numeroMin=-numeroMax;
-    result=Number(eval(formulaBack).toFixed(9));
-    console.log(result);
-    if(result == Infinity || result == -Infinity|| result>numeroMax || result<numeroMin){
-        errores('math'); //las calculadores basicas suelen marcar error cuando el valor es infinito o demasiado grande
-    }else if((result.toString().length>10 && !result.toString().includes('.')) || result.toString().length>11 || result.toString().includes('e')){
-        blink.innerHTML='';
-        igual=true;
-        notacionExpo(result);
-        setMemoria();
-        displayExpo('mostrar');
-        valorExp=0;
-    }else{
-        $resultado.innerHTML = result;
-        valorAns=result;
-        igual=true;
-        blink.innerHTML='';
-        setMemoria();
-        displayExpo('ocultar');
+const manejarUpClick = () => { 
+    if (posicionMemoria === -1 && mostrandoResultado) {
+        posicionMemoria = memoriaOperaciones.length - 2;
+    } else if (posicionMemoria === -1 && memoriaOperaciones.length) {
+        posicionMemoria = memoriaOperaciones.length - 1;
+    } else if (posicionMemoria > 0) {
+        posicionMemoria--;
+    } else {
+        return;
+    }
+    if (memoriaOperaciones.length) {
+        modoLecturaMemoria = true;
+        manejarIndicadoresMemoria();
+        $blink.innerHTML = '';
+        $blink.classList.remove("blink");
+        leerMemoria();
     }
 }
 
-
+const manejarDownClick = () => {
+    if (posicionMemoria < memoriaOperaciones.length - 1 && memoriaOperaciones.length) {
+        posicionMemoria++;
+        modoLecturaMemoria = true;
+        manejarIndicadoresMemoria();
+        $blink.innerHTML = '';
+        $blink.classList.remove("blink");
+        leerMemoria();
+    }
+}
 
 
 const validarEntrada = (valor) => {
@@ -408,11 +396,16 @@ const validarEntrada = (valor) => {
         if (valor === "multiplicacion" || valor === "division") {
             operacion += mapa[valor].back;
             operacion_display += mapa[valor].front;
+        } else if (valor === "ans") {
+            operacion += " "+mapa[valor]+" ";
+            operacion_display += mapa[valor];
         } else {
             operacion += mapa[valor];
             operacion_display += mapa[valor];
         }
         $formula.innerHTML = operacion_display;
+        $blink.classList.remove("blink");
+        setTimeout(() => { $blink.classList.add("blink"); }, 10)
     } else
         console.error("Haz modificado el mapa de valores");
 }
@@ -437,7 +430,7 @@ const manejarError = (error) => {
 
 
 const validarOperacion = () => {
-    const valoresAdmitidos = /^(Ans|e|pi|log|\(|\)|\.|[0-9]|\+|\-|×|\*|\/|÷)*$/;
+    const valoresAdmitidos = /^(Ans| Ans |e|pi|log|\(|\)|\.|[0-9]|\+|\-|×|\*|\/|÷)*$/;
     if (!valoresAdmitidos.test(operacion) || !valoresAdmitidos.test(operacion_display)) {
         throw new InvalidValueError();
     }
@@ -445,26 +438,41 @@ const validarOperacion = () => {
 
 const notacionExponencial = (result) => { 
     if (Number.isInteger(result)) {
-        result = math.format(result, { notation: 'exponential', precision: 11 })
-        exponente = result.split('e')[1];
-        coeficiente = result.split('e')[0];
+        result = math.format(result, { notation: 'exponential', precision:11 })
+        exponente = math.evaluate(result.split('e')[1]).toString();
+        coeficiente = math.evaluate(result.split('e')[0]).toString();
         coeficiente = coeficiente.substring(0, 11);
-        return coeficiente;
+        return coeficiente + 'e' + exponente;
+    } else {
+        result = math.format(result, { notation: 'exponential', precision: 11 })
+        exponente = math.evaluate(result.split('e')[1]).toString();
+        coeficiente = math.evaluate(result.split('e')[0]).toString();
+        coeficiente = coeficiente.substring(0, 11);
+        return coeficiente + 'e' + exponente;
     }
 }
 
-const isExponecial = (result) => {
-    if (!Number.isInteger(result) && math.format(result, { notation: 'fixed' }).length > 11) 
-        return true
+const isExponencial = (result) => {
+    if (!Number.isInteger(result) && result <= 1e-7)
+        modoExponencial = true
     else if (Number.isInteger(result) && math.format(result, { notation: 'fixed' }).length > 10)
-        return true
-    else
-        return false;
+        modoExponencial = true
+    else 
+        modoExponencial = false;
 }
 
 const mostrarNotacionExponencial = () => { 
-    $base.classList.add("mostrar")
+    $base.classList.add("base--visible")
     $exponente.innerHTML = exponente;
+    $resultado.innerHTML = coeficiente;
+}
+
+const ocultarNotacionExponencial = () => { 
+    $base.classList.remove("base--visible")
+    exponente = '';
+    $exponente.innerHTML = exponente;
+    coeficiente = '';
+    modoExponencial = false;
 }
 
 const analizarResultado = (result) => {
@@ -473,80 +481,282 @@ const analizarResultado = (result) => {
     if (result > ENTEROMAX || result < ENTEROMIN) {
         throw new MathError();
     }
-    if (isExponecial(result)) {
-        console.log("es exponencial")
-        modoExponencial = true;
-        mostrarNotacionExponencial();
+    isExponencial(result);
+    if (modoExponencial) {
         result = notacionExponencial(result);
+        mostrarNotacionExponencial();
+        resultado = result;
+    } else if (!Number.isInteger(result) && result.toString().length > 11) { 
+        ocultarNotacionExponencial();
+        result = result.toString().substring(0, 11);
+        resultado = result;
+        $resultado.innerHTML = resultado;
+    } else {
+        ocultarNotacionExponencial();
+        resultado = result.toString();
+        $resultado.innerHTML = resultado;
     }
-    //console.log(result.toExponential(9));
-    $resultado.innerHTML = result;
-    
+    mostrandoResultado = true;
+    ans = resultado;
+    $blink.innerHTML = '';
+    $blink.classList.remove("blink");
 }
 
 const operar = (formulaMath) => {
     try {
+        modoExponencial = false;
         validarOperacion();
+        if (modoLecturaMemoria)
+            return;
         let result;
-        result = math.evaluate(formulaMath);
+        result = math.evaluate(formulaMath, {Ans: ans});
         result = math.format(result, { precision: 14 });
         result = math.evaluate(result);
         analizarResultado(result);
-        
+        checkDesborde();
+        escribirMemoria();
+
     } catch (error) {
         manejarError(error);
+        mostrandoError = true;
+        $blink.innerHTML = '';
+        $blink.classList.remove("blink");
     }
 }
 
 const clickFunction = (e) => {
-    if (e.target.getAttribute("data-tipo") === 'argumento' || e.target.getAttribute("data-tipo") === 'operador') {
-        validarEntrada(e.target.getAttribute("data-valor"))
+    let dataTipo = e.target.getAttribute("data-tipo");
+    let dataValor = e.target.getAttribute("data-valor");
+    if ((mostrandoResultado || modoLecturaMemoria) && dataTipo === "operador" && dataValor != "ans") {
+        mostrandoResultado = false;
+        modoLecturaMemoria = false;
+        posicionMemoria = -1;
+        manejarIndicadoresMemoria();
+        operacion = " Ans ";
+        operacion_display = "Ans";
+        $blink.innerHTML = '_';
+        $blink.classList.remove("blink");
+        setTimeout(() => { $blink.classList.add("blink"); }, 20)
+        
+    } else if ((mostrandoResultado || modoLecturaMemoria) && (dataTipo === "argumento" || dataValor ==="ans")) {
+        limpiarFormula();
+        mostrandoResultado = false;
+        modoLecturaMemoria = false;
+        posicionMemoria = -1;
+        manejarIndicadoresMemoria();
+        $blink.innerHTML = '_';
+        $blink.classList.remove("blink");
+        setTimeout(() => { $blink.classList.add("blink"); }, 20)
+    }
+    if ((dataTipo === 'argumento' || dataTipo === 'operador') && !mostrandoError) {
+        validarEntrada(dataValor);
         checkDesborde();
     }
-    else if (e.target.getAttribute("data-valor") === 'eliminar')
+    else if (dataValor === 'eliminar' && !mostrandoError && !mostrandoResultado)
         eliminar();
-    else if (e.target.getAttribute("data-valor") === 'reset')
+    else if (dataValor === 'reset')
         resetear();
-    else if (e.target.getAttribute("data-valor") === 'operar')
+    else if (dataValor === 'operar' && !mostrandoError)
         operar(operacion);
-    else if (e.target.getAttribute("data-valor") === 'off')
+    else if (dataValor === 'off')
         apagar();
-    else if (e.target.getAttribute("data-valor") === 'on')
-        encender();
 }
 
-const keyDownFunction = (event) => {
-    if (event.key in keyMap) {
-        document.querySelector(`[data-valor='${keyMap[event.key]}']`).classList.add("button--active");
-        validarEntrada(keyMap[event.key]);
+const keyDownFunction = (e) => {
+    let tecla = e.key;
+
+    if ((mostrandoResultado || modoLecturaMemoria) && tecla in keyMap["operadores"]) {
+        mostrandoResultado = false;
+        modoLecturaMemoria = false;
+        posicionMemoria = -1;
+        manejarIndicadoresMemoria();
+        operacion = " Ans ";
+        operacion_display = "Ans";
+        $blink.innerHTML = '_';
+        $blink.classList.remove("blink");
+        setTimeout(() => { $blink.classList.add("blink"); }, 20)
+
+    } else if ((mostrandoResultado || modoLecturaMemoria) && tecla in keyMap["argumentos"]) {
+        limpiarFormula();
+        mostrandoResultado = false;
+        modoLecturaMemoria = false;
+        posicionMemoria = -1;
+        manejarIndicadoresMemoria();
+        $blink.innerHTML = '_';
+        $blink.classList.add("blink");
+    }
+    if (tecla in keyMap["argumentos"] && !mostrandoError) {
+        document.querySelector(`[data-valor='${keyMap.argumentos[tecla]}']`).classList.add("button--active");
+        validarEntrada(keyMap.argumentos[tecla]);
         checkDesborde();
-    } else if (event.key === "Enter") {
+        
+    } else if (tecla in keyMap["operadores"] && !mostrandoError) {
+        document.querySelector(`[data-valor='${keyMap.operadores[tecla]}']`).classList.add("button--active");
+        validarEntrada(keyMap.operadores[tecla]);
+        checkDesborde();
+    } else if (tecla === "Enter" && !mostrandoError) {
         document.querySelector("[data-valor='operar']").classList.add("button--active");
         operar(operacion)
-    } else if (event.key === "Backspace") {
+    } else if (tecla === "Backspace" && !mostrandoError && !mostrandoResultado) {
         document.querySelector("[data-valor='eliminar']").classList.add("button--active");
         eliminar();
-    } else if (event.key === "Escape") {
+    } else if (tecla === "Escape") {
         document.querySelector("[data-valor='reset']").classList.add("button--active");
         resetear();
     }
+    else if (tecla === "ArrowUp") {
+        manejarUpClick();
+        flechas.classList.add("highPress");
+    }
+    else if (tecla === "ArrowDown") { 
+        manejarDownClick();
+        flechas.classList.add("lowPress");
+    }
+    else if (tecla === "ArrowLeft") {
+        flechas.classList.add("leftPress");
+        $blink.classList.remove("blink");
+        setTimeout(() => { $blink.classList.add("blink"); }, 20)
+        if (operacion_display.length > 0) {
+            modoEdicion = true;
+            editarFormula()
+            moverCursorIzquierda()
+        }
+    }
+    else if (tecla === "ArrowRight") {
+        flechas.classList.add("rightPress");
+        $blink.classList.remove("blink");
+        setTimeout(() => { $blink.classList.add("blink"); }, 20)
+        if (operacion_display.length > 0 && (modoLecturaMemoria || mostrandoResultado)) {
+            modoEdicion = true;
+            editarFormula();
+            moverCursorDerecha()
+        }
+       
+    }
 }
 
-const keyUpFunction = (event) => {
-    if (event.key in keyMap)
-        document.querySelector(`[data-valor='${keyMap[event.key]}']`).classList.remove("button--active");
-    else if (event.key === "Enter")
+
+
+let caracterOriginal = $formula.innerHTML.charAt(posicionCursor);
+let mostrarGuionBajo = false;
+let intervalId;
+let tiempoIntervalo = 500;
+
+
+const ejecutarIntervalo = () => {
+    if (mostrarGuionBajo) {
+        $formula.innerHTML = $formula.innerHTML.substring(0, posicionCursor) + '_' + $formula.innerHTML.substring(posicionCursor + 1);
+    } else {
+        $formula.innerHTML = $formula.innerHTML.substring(0, posicionCursor) + caracterOriginal + $formula.innerHTML.substring(posicionCursor + 1);
+    }
+    mostrarGuionBajo = !mostrarGuionBajo;
+    tiempoIntervalo = tiempoIntervalo === 500 ? 320 : 500;
+    intervalId = setTimeout(ejecutarIntervalo, tiempoIntervalo);
+}
+
+const iniciarIntervalo = () => {
+    if (intervalId)
+        clearTimeout(intervalId);
+    ejecutarIntervalo();
+}
+
+//iniciarIntervalo();
+
+
+const editarOperacion = () => {
+    posicionCursor = operacion_display.length - 1;
+}
+
+const moverCursorIzquierda = () => {
+    if (posicionCursor > 0) {
+        operacion_display = operacion_display.substring(0, posicionCursor) + caracterOriginal + operacion_display.substring(posicionCursor + 1);
+        $formula.innerHTML = operacion_display;
+        posicionCursor--;
+        caracterOriginal = operacion_display.charAt(posicionCursor);
+        mostrarGuionBajo = true;
+    }
+    iniciarIntervalo();
+}
+
+const moverCursorDerecha= () =>{
+    if (posicionCursor < $formula.innerHTML.length - 1) {
+        $formula.innerHTML = $formula.innerHTML.substring(0, posicionCursor) + caracterOriginal + $formula.innerHTML.substring(posicionCursor + 1);
+        posicionCursor++;
+        caracterOriginal = $formula.innerHTML.charAt(posicionCursor);
+        mostrarGuionBajo = true;
+    }
+    iniciarIntervalo();
+}
+
+
+
+
+const keyUpFunction = (e) => {
+    let tecla = e.key;
+    if (tecla in keyMap["argumentos"])
+        document.querySelector(`[data-valor='${keyMap.argumentos[tecla]}']`).classList.remove("button--active");
+    else if (tecla in keyMap["operadores"])
+        document.querySelector(`[data-valor='${keyMap.operadores[tecla]}']`).classList.remove("button--active");
+    else if (tecla === "Enter" && !mostrandoError)
         document.querySelector("[data-valor='operar']").classList.remove("button--active");
-    else if (event.key === "Backspace")
+    else if (tecla === "Backspace" && !mostrandoResultado && !mostrandoError)
         document.querySelector("[data-valor='eliminar']").classList.remove("button--active");
-    else if (event.key === "Escape")
+    else if (tecla === "Escape")
         document.querySelector("[data-valor='reset']").classList.remove("button--active");
+    else if (tecla === "ArrowUp" || tecla === "ArrowDown" || tecla === "ArrowLeft" || tecla === "ArrowRight") {
+        flechas.classList.remove("highPress");
+        flechas.classList.remove("lowPress");
+        flechas.classList.remove("leftPress");
+        flechas.classList.remove("rightPress");
+    }
+}
+
+const mouseDownFunction = (e) => {
+    let dataFlecha = e.target.getAttribute("data-flecha");
+    if (dataFlecha === 'up') {
+        flechas.classList.add("highPress");
+        manejarUpClick();
+        presionandoDireccional = true;
+    }
+    else if (dataFlecha === 'down') {
+        flechas.classList.add("lowPress");
+        manejarDownClick();
+        presionandoDireccional = true;
+    }
+    else if (dataFlecha === 'left') {
+        flechas.classList.add("leftPress");
+        //editarFormula(dataFlecha);
+        $blink.classList.remove("blink");
+        setTimeout(() => { $blink.classList.add("blink"); }, 20)
+        moverCursorIzquierda();
+        presionandoDireccional = true;
+    }
+    else if (dataFlecha === 'right') {
+        flechas.classList.add("rightPress");
+        //editarFormula(dataFlecha);
+        $blink.classList.remove("blink");
+        setTimeout(() => { $blink.classList.add("blink"); }, 20)
+        moverCursorDerecha();
+        presionandoDireccional = true;
+    }
+}
+
+const mouseUpFunction = (e) => {
+    if (presionandoDireccional) {
+        flechas.classList.remove("highPress");
+        flechas.classList.remove("lowPress");
+        flechas.classList.remove("leftPress");
+        flechas.classList.remove("rightPress");
+        presionandoDireccional = false;
+    }
 }
 
 document.addEventListener("click", clickFunction)
+$on.addEventListener("click", encender);
 document.addEventListener("keydown", keyDownFunction);
 document.addEventListener("keyup", keyUpFunction);
-
+document.addEventListener("mousedown", mouseDownFunction)
+document.addEventListener("mouseup", mouseUpFunction)
 
 
 
@@ -645,7 +855,7 @@ document.addEventListener("keyup", keyUpFunction);
 //         if(e.target && e.target.tagName === 'BUTTON' ){
 //             direccionPress(e.target.getAttribute("data-flecha"));
 //             if(e.target.getAttribute("data-flecha") === 'left' || e.target.getAttribute("data-flecha") === 'right'){
-//                 // editarFormula(event.target.getAttribute("data-flecha")); 
+//                 // editarFormula(event.target.getAttribute("data-flecha"));
 //                 // Funcion que permite navegar sobre la formula, para editar o insertar nuevos elementos.
 //             }else if(e.target.getAttribute("data-flecha") === 'up' || e.target.getAttribute("data-flecha") === 'down'){
 //                 getMemoria(e.target.getAttribute("data-flecha"));
@@ -664,7 +874,7 @@ document.addEventListener("keyup", keyUpFunction);
 //         if(e.target && e.target.tagName === 'BUTTON' ){
 //             direccionPress(e.target.getAttribute("data-flecha"));
 //             if(e.target.getAttribute("data-flecha") === 'left' || e.target.getAttribute("data-flecha") === 'right'){
-//                 // editarFormula(event.target.getAttribute("data-flecha")); 
+//                 // editarFormula(event.target.getAttribute("data-flecha"));
 //                 // Funcion que permite navegar sobre la formula, para editar o insertar nuevos elementos.
 //             }else if(e.target.getAttribute("data-flecha") === 'up' || e.target.getAttribute("data-flecha") === 'down'){
 //                 getMemoria(e.target.getAttribute("data-flecha"));
