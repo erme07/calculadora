@@ -125,15 +125,18 @@ body {
     display: inline;
 }
 .formula{
+    display: flex;
     overflow: hidden;
     margin-left:.8px;
-    /* white-space: nowrap; */
     white-space: pre;
 }
-.formula--desbordada{
-    display: flex;
+.formula--alignEnd{
     justify-content: flex-end;
 }
+.formula--alignStart{
+    justify-content: flex-start;
+}
+
 .blink {
     animation: parpadeo .8s steps(1) infinite;
 }
