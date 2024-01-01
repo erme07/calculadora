@@ -43,7 +43,7 @@ let exponente, coeficiente, resultado=0;
 let operacion = "", operacion_display = "", ans = 0;
 let posicionMemoria = -1, posicionCursor = 0;
 let caracterOriginal;
-let mostrarGuionBajo = false;
+let mostrarGuionBajo = true;
 let intervalId;
 let tiempoIntervalo = 500;
 
@@ -99,7 +99,6 @@ const mapa = Object.freeze({
     nueve: "9",
     cero: "0"
 })
-
 
 
 function apagar(){
@@ -158,7 +157,14 @@ const limpiarFormula = () => {
 
 const eliminar = () => {
     if (modoEdicion) {
-        operacion_display = operacion_display.substring(0, posicionCursor) + operacion_display.substring(posicionCursor + 1);
+        if (operacion_display[posicionCursor] === "A") {
+            //DEbo eliminar el uso de dos formulas, debo quedarme solo con operacion_display y reemplazar los caracteres antes de hacer  math.evaluate().
+            operacion_display = operacion_display.substring(0, posicionCursor) + operacion_display.substring(posicionCursor + 3);
+            operacion = operacion.substring(0, posicionCursor) + operacion.substring(posicionCursor + 1);
+        }
+        else
+            operacion_display = operacion_display.substring(0, posicionCursor) + operacion_display.substring(posicionCursor + 1);
+            
         $formula.innerHTML = operacion_display;
         operacion = operacion.substring(0, posicionCursor) + operacion.substring(posicionCursor + 1);
         caracterOriginal = operacion_display.charAt(posicionCursor);
@@ -183,6 +189,7 @@ const eliminar = () => {
 const salirModoEdicion = () => {
     modoEdicion = false;
     posicionCursor = 0;
+    marginformula = 0;
     caracterOriginal = '';
     clearTimeout(intervalId);
 }
@@ -194,16 +201,12 @@ function resetear() {
     resultado = 0;
     $resultado.innerHTML = resultado;
     mostrandoResultado = false;
-    modoExponencial = false;
-    salirModoEdicion();
     mostrandoError = false;
     desborde = false;
-    $exponente.innerHTML = '';
-    $base.classList.remove("base--visible");
-
+    salirModoEdicion();
+    salirModoExponencial();
     flechaIzq.classList.remove('mostrar');
     flechaRight.classList.remove('mostrar');
-    
     modoLecturaMemoria = false;
     posicionMemoria = -1;
     manejarIndicadoresMemoria();
@@ -233,21 +236,20 @@ const resetDesborde = () => {
 
 const gestionarDesborde = () => {
     resetDesborde();
-    if (operacion_display.toString().length > 13 && (mostrandoResultado || modoLecturaMemoria)){
+    if (operacion_display.toString().length > 13 && (mostrandoResultado || modoLecturaMemoria))
         alinearIzquierda();
-    } else if (operacion_display.toString().length > 13 && !mostrandoResultado && !modoLecturaMemoria) {
+    else if (operacion_display.toString().length > 13 && !mostrandoResultado && !modoLecturaMemoria) 
         alinearDerecha();
-    }
-    if (modoEdicion && desborde) {
-        resetDesborde();
-        let longitud = operacion_display.length;
-        alinearIzquierda();
-        flechaRight.classList.remove('mostrar');
-        flechaIzq.classList.add('mostrar');
-        if (posicionCursor !== operacion_display.length - 1) {
-            flechaRight.classList.add('mostrar');
+    if (modoEdicion && desborde) { 
+        if (posicionCursor > 13) {
+            $formula.style.marginRight = `-${(marginformula - 1)}ch`;
+            if (posicionCursor <= operacion_display.length - 1)
+                flechaRight.classList.add('mostrar');
+            alinearDerecha();
+        } else {
+            flechaIzq.classList.remove('mostrar');
+            alinearIzquierda();
         }
-        $formula.style.marginLeft = `-${(posicionCursor +1 - 14)}ch`;
     }
 }
 
@@ -283,7 +285,7 @@ const manejarIndicadoresMemoria = () => {
         flechaUp.classList.remove("mostrar");
     else if (posicionMemoria === memoriaOperaciones.length - 1 && memoriaOperaciones.length)
         flechaDown.classList.remove("mostrar");
-    if (posicionMemoria === -1 && !memoriaOperaciones.length) {
+    if ((posicionMemoria === -1 && !memoriaOperaciones.length)||mostrandoError) {
         flechaDown.classList.remove("mostrar");
         flechaUp.classList.remove("mostrar");
     }else if(posicionMemoria === -1 && memoriaOperaciones.length) {
@@ -303,7 +305,7 @@ const leerMemoria = () => {
         exponente = elemento.exponencial.exponente;
         mostrarNotacionExponencial();
     } else {
-        ocultarNotacionExponencial();
+        salirModoExponencial();
         $resultado.innerHTML = resultado;
     }
     $formula.innerHTML = operacion_display;
@@ -353,19 +355,33 @@ const editarOperacion = (valor) => {
     } else { 
         operacion = operacion.substring(0, posicionCursor) + mapa[valor] + operacion.substring(posicionCursor + 1);
         operacion_display = operacion_display.substring(0, posicionCursor) + mapa[valor] + operacion_display.substring(posicionCursor + 1);
+        // $formula.innerHTML = operacion_display.substring(0, posicionCursor) + mapa[valor] + "_" + operacion_display.substring(posicionCursor + 2);
     }
     moverCursorDerecha();
     console.log("logrado...");
+    //$formula.innerHTML = "asdadasd";
 }
 
-const validarEntrada = (valor) => {
+const validarEntrada = (valor,tipo) => {
+    
     if (valor in mapa) {
         if (modoEdicion) {
             editarOperacion(valor);
-            $formula.innerHTML = operacion_display;
+            //$formula.innerHTML = operacion_display;
             $blink.classList.remove("blink");
             setTimeout(() => { $blink.classList.add("blink"); }, 10)
             return;
+        }
+        if (((mostrandoResultado || modoLecturaMemoria) && tipo === "operador" && valor != "ans") || ((mostrandoResultado || modoLecturaMemoria) && tipo in keyMap["operadores"])) {
+            reiniciarParpadeo();
+            posicionMemoria = -1;
+            manejarIndicadoresMemoria();
+            operacion = " Ans ";
+            operacion_display = "Ans";
+        } else if (((mostrandoResultado || modoLecturaMemoria) && (tipo === "argumento" || valor === "ans")) || ((mostrandoResultado || modoLecturaMemoria) && tipo in keyMap["argumentos"])) {
+            limpiarFormula();
+            posicionMemoria = -1;
+            manejarIndicadoresMemoria();
         }
         if (valor === "multiplicacion" || valor === "division") {
             operacion += mapa[valor].back;
@@ -377,9 +393,10 @@ const validarEntrada = (valor) => {
             operacion += mapa[valor];
             operacion_display += mapa[valor];
         }
+        mostrandoResultado = false;
+        modoLecturaMemoria = false;
         $formula.innerHTML = operacion_display;
-        $blink.classList.remove("blink");
-        setTimeout(() => { $blink.classList.add("blink"); }, 10)
+        reiniciarParpadeo();
     } else
         console.error("Haz modificado el mapa de valores");
 }
@@ -403,7 +420,7 @@ const manejarError = (error) => {
 }
 
 
-const validarOperacion = () => {
+const validarOperacion = (formula) => {
     const valoresAdmitidos = /^(Ans| Ans |e|pi|log|\(|\)|\.|[0-9]|\+|\-|×|\*|\/|÷)*$/;
     if (!valoresAdmitidos.test(operacion) || !valoresAdmitidos.test(operacion_display)) {
         throw new InvalidValueError();
@@ -441,10 +458,10 @@ const mostrarNotacionExponencial = () => {
     $resultado.innerHTML = coeficiente;
 }
 
-const ocultarNotacionExponencial = () => { 
+const salirModoExponencial = () => {
     $base.classList.remove("base--visible")
+    $exponente.innerHTML = '';
     exponente = '';
-    $exponente.innerHTML = exponente;
     coeficiente = '';
     modoExponencial = false;
 }
@@ -461,12 +478,12 @@ const analizarResultado = (result) => {
         mostrarNotacionExponencial();
         resultado = result;
     } else if (!Number.isInteger(result) && result.toString().length > 11) { 
-        ocultarNotacionExponencial();
+        salirModoExponencial();
         result = result.toString().substring(0, 11);
         resultado = result;
         $resultado.innerHTML = resultado;
     } else {
-        ocultarNotacionExponencial();
+        salirModoExponencial();
         resultado = result.toString();
         $resultado.innerHTML = resultado;
     }
@@ -479,12 +496,16 @@ const analizarResultado = (result) => {
 
 const operar = (formulaMath) => {
     try {
+        let formula = formulaMath;
         modoExponencial = false;
-        validarOperacion();
-        if (modoLecturaMemoria)
+        validarOperacion(formula);
+        formula = formula.replace(/Ans/g, " Ans ");
+        formula = formula.replace(/×/g, "*");
+        formula = formula.replace(/÷/g, "/");
+        if (modoLecturaMemoria || mostrandoResultado)
             return;
         let result;
-        result = math.evaluate(formulaMath, {Ans: ans});
+        result = math.evaluate(formula, {Ans: ans});
         result = math.format(result, { precision: 14 });
         result = math.evaluate(result);
         analizarResultado(result);
@@ -493,8 +514,11 @@ const operar = (formulaMath) => {
         salirModoEdicion();
 
     } catch (error) {
+        //modoExponencial = false;
+        salirModoExponencial();
         manejarError(error);
         mostrandoError = true;
+        manejarIndicadoresMemoria();
         $blink.innerHTML = '';
         $blink.classList.remove("blink");
     }
@@ -512,23 +536,8 @@ const reiniciarParpadeo = () => {
 const clickFunction = (e) => {
     let dataTipo = e.target.getAttribute("data-tipo");
     let dataValor = e.target.getAttribute("data-valor");
-    if ((mostrandoResultado || modoLecturaMemoria) && dataTipo === "operador" && dataValor != "ans") {
-        reiniciarParpadeo();
-        mostrandoResultado = false;
-        modoLecturaMemoria = false;
-        posicionMemoria = -1;
-        manejarIndicadoresMemoria();
-        operacion = " Ans ";
-        operacion_display = "Ans";
-    } else if ((mostrandoResultado || modoLecturaMemoria) && (dataTipo === "argumento" || dataValor === "ans")) {
-        limpiarFormula();
-        mostrandoResultado = false;
-        modoLecturaMemoria = false;
-        posicionMemoria = -1;
-        manejarIndicadoresMemoria();
-    }
     if ((dataTipo === 'argumento' || dataTipo === 'operador') && !mostrandoError) {
-        validarEntrada(dataValor);
+        validarEntrada(dataValor, dataTipo);
         gestionarDesborde();
     }
     else if (dataValor === 'eliminar' && !mostrandoError && !mostrandoResultado)
@@ -543,31 +552,14 @@ const clickFunction = (e) => {
 
 const keyDownFunction = (e) => {
     let tecla = e.key;
-
-    if ((mostrandoResultado || modoLecturaMemoria) && tecla in keyMap["operadores"]) {
-        reiniciarParpadeo();
-        mostrandoResultado = false;
-        modoLecturaMemoria = false;
-        posicionMemoria = -1;
-        manejarIndicadoresMemoria();
-        operacion = " Ans ";
-        operacion_display = "Ans";
-
-    } else if ((mostrandoResultado || modoLecturaMemoria) && tecla in keyMap["argumentos"]) {
-        limpiarFormula();
-        mostrandoResultado = false;
-        modoLecturaMemoria = false;
-        posicionMemoria = -1;
-        manejarIndicadoresMemoria();
-    }
     if (tecla in keyMap["argumentos"] && !mostrandoError) {
         document.querySelector(`[data-valor='${keyMap.argumentos[tecla]}']`).classList.add("button--active");
-        validarEntrada(keyMap.argumentos[tecla]);
+        validarEntrada(keyMap.argumentos[tecla], tecla);
         gestionarDesborde();
         
     } else if (tecla in keyMap["operadores"] && !mostrandoError) {
         document.querySelector(`[data-valor='${keyMap.operadores[tecla]}']`).classList.add("button--active");
-        validarEntrada(keyMap.operadores[tecla]);
+        validarEntrada(keyMap.operadores[tecla], tecla);
         gestionarDesborde();
     } else if (tecla === "Enter" && !mostrandoError) {
         document.querySelector("[data-valor='operar']").classList.add("button--active");
@@ -644,16 +636,24 @@ const inicializarEdicion = (tecla) => {
     }
     
 }
+let marginformula = 0;
 
 const moverCursorIzquierda = () => {
-    if (posicionCursor === operacion_display.length) {
+    // if (posicionCursor === operacion_display.length) {
+    //     console.log("entro asasdasa")
+    //     $formula.innerHTML = operacion_display;
+    //     posicionCursor--;
+    //     marginformula++;
+    //     caracterOriginal = operacion_display.charAt(posicionCursor);
+    //     mostrarGuionBajo = true;
+    // } else
+    if (posicionCursor > 0) {
         $formula.innerHTML = operacion_display;
-        posicionCursor--;
-        caracterOriginal = operacion_display.charAt(posicionCursor);
-        mostrarGuionBajo = true;
-    }else if (posicionCursor > 0) {
-        $formula.innerHTML = operacion_display;
-        posicionCursor--;
+        if (operacion_display[posicionCursor - 1] === 's')
+            posicionCursor -= 3;
+        else
+            posicionCursor--;
+        marginformula++;
         caracterOriginal = operacion_display.charAt(posicionCursor);
         mostrarGuionBajo = true;
     }
@@ -663,14 +663,19 @@ const moverCursorIzquierda = () => {
 
 const moverCursorDerecha = () => {
     if (posicionCursor < operacion_display.length - 1) {
-        $formula.innerHTML= operacion_display
-        posicionCursor++;
+        $formula.innerHTML = operacion_display;
+        if (operacion_display[posicionCursor + 1] === 'n')
+            posicionCursor += 3;
+        else
+            posicionCursor++;
+        marginformula--;
         caracterOriginal = operacion_display.charAt(posicionCursor);
         mostrarGuionBajo = true;
     } else if (posicionCursor === operacion_display.length - 1) {
         $formula.innerHTML = operacion_display;
         salirModoEdicion();
         reiniciarParpadeo()
+        gestionarDesborde();
         return;
     }
     iniciarIntervalo();
