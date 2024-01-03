@@ -40,12 +40,13 @@ let modoExponencial = false, mostrandoError = false, mostrandoResultado = false,
 
 //variables
 let exponente, coeficiente, resultado=0;
-let operacion = "", operacion_display = "", ans = 0;
+let operacion_display = "", ans = 0;
 let posicionMemoria = -1, posicionCursor = 0;
 let caracterOriginal;
 let mostrarGuionBajo = true;
 let intervalId;
 let tiempoIntervalo = 500;
+let marginformula = 0;
 
 
     
@@ -74,14 +75,8 @@ const keyMap = Object.freeze({
 });
 
 const mapa = Object.freeze({
-    multiplicacion: Object.freeze({
-        front: "×",
-        back: "*"
-    }),
-    division: Object.freeze({
-        front: "÷",
-        back: "/"
-    }),
+    multiplicacion: "×",
+    division: "÷",
     resta: "-",
     suma: "+",
     punto: ".",
@@ -149,7 +144,6 @@ function encender() {
 }
 
 const limpiarFormula = () => {
-    operacion = '';
     operacion_display = '';
     $formula.innerHTML = operacion_display;
     reiniciarParpadeo();
@@ -158,15 +152,14 @@ const limpiarFormula = () => {
 const eliminar = () => {
     if (modoEdicion) {
         if (operacion_display[posicionCursor] === "A") {
-            //DEbo eliminar el uso de dos formulas, debo quedarme solo con operacion_display y reemplazar los caracteres antes de hacer  math.evaluate().
             operacion_display = operacion_display.substring(0, posicionCursor) + operacion_display.substring(posicionCursor + 3);
-            operacion = operacion.substring(0, posicionCursor) + operacion.substring(posicionCursor + 1);
+            marginformula -= 3;
         }
-        else
+        else {
             operacion_display = operacion_display.substring(0, posicionCursor) + operacion_display.substring(posicionCursor + 1);
-            
+            marginformula--;
+        }
         $formula.innerHTML = operacion_display;
-        operacion = operacion.substring(0, posicionCursor) + operacion.substring(posicionCursor + 1);
         caracterOriginal = operacion_display.charAt(posicionCursor);
         if (posicionCursor === operacion_display.length) {
             salirModoEdicion();
@@ -176,10 +169,6 @@ const eliminar = () => {
             operacion_display = operacion_display.slice(0, -3)
         else
             operacion_display = operacion_display.slice(0, -1)
-        if (operacion[operacion.length - 1] === ' ')
-            operacion = operacion.slice(0, -5);
-        else
-            operacion = operacion.slice(0, -1);
     }
     $formula.innerHTML = operacion_display;
     reiniciarParpadeo();
@@ -234,24 +223,7 @@ const resetDesborde = () => {
     desborde = false;
 }
 
-const gestionarDesborde = () => {
-    resetDesborde();
-    if (operacion_display.toString().length > 13 && (mostrandoResultado || modoLecturaMemoria))
-        alinearIzquierda();
-    else if (operacion_display.toString().length > 13 && !mostrandoResultado && !modoLecturaMemoria) 
-        alinearDerecha();
-    if (modoEdicion && desborde) { 
-        if (posicionCursor > 13) {
-            $formula.style.marginRight = `-${(marginformula - 1)}ch`;
-            if (posicionCursor <= operacion_display.length - 1)
-                flechaRight.classList.add('mostrar');
-            alinearDerecha();
-        } else {
-            flechaIzq.classList.remove('mostrar');
-            alinearIzquierda();
-        }
-    }
-}
+
 
 
 
@@ -259,7 +231,6 @@ const gestionarDesborde = () => {
 
 const escribirMemoria = () => {
     let elemento = ({
-        operacion: operacion,
         operacion_display: operacion_display,
         resultado: resultado
     });
@@ -295,7 +266,6 @@ const manejarIndicadoresMemoria = () => {
 
 const leerMemoria = () => {
     let elemento = memoriaOperaciones[posicionMemoria]
-    operacion = elemento.operacion;
     operacion_display = elemento.operacion_display;
     resultado = elemento.resultado;
     ans = resultado;
@@ -347,22 +317,17 @@ const manejarDownClick = () => {
 
 const editarOperacion = (valor) => { 
     if (valor === "multiplicacion" || valor === "division") {
-        operacion = operacion.substring(0, posicionCursor) + mapa[valor].back + operacion.substring(posicionCursor + 1);
         operacion_display = operacion_display.substring(0, posicionCursor) + mapa[valor].front + operacion_display.substring(posicionCursor + 1);
     } else if (valor === "ans") {
-        operacion = operacion.substring(0, posicionCursor) + " " + mapa[valor] + " " + operacion.substring(posicionCursor + 1);
         operacion_display = operacion_display.substring(0, posicionCursor) + mapa[valor] + operacion_display.substring(posicionCursor + 1);
     } else { 
-        operacion = operacion.substring(0, posicionCursor) + mapa[valor] + operacion.substring(posicionCursor + 1);
         operacion_display = operacion_display.substring(0, posicionCursor) + mapa[valor] + operacion_display.substring(posicionCursor + 1);
-        // $formula.innerHTML = operacion_display.substring(0, posicionCursor) + mapa[valor] + "_" + operacion_display.substring(posicionCursor + 2);
+
     }
     moverCursorDerecha();
-    console.log("logrado...");
-    //$formula.innerHTML = "asdadasd";
 }
 
-const validarEntrada = (valor,tipo) => {
+const validarEntrada = (valor,tipo,tipokey) => {
     
     if (valor in mapa) {
         if (modoEdicion) {
@@ -372,25 +337,21 @@ const validarEntrada = (valor,tipo) => {
             setTimeout(() => { $blink.classList.add("blink"); }, 10)
             return;
         }
-        if (((mostrandoResultado || modoLecturaMemoria) && tipo === "operador" && valor != "ans") || ((mostrandoResultado || modoLecturaMemoria) && tipo in keyMap["operadores"])) {
+        if (((mostrandoResultado || modoLecturaMemoria) && tipo === "operador" && valor != "ans") || ((mostrandoResultado || modoLecturaMemoria) && tipokey in keyMap["operadores"])) {
             reiniciarParpadeo();
             posicionMemoria = -1;
             manejarIndicadoresMemoria();
-            operacion = " Ans ";
             operacion_display = "Ans";
-        } else if (((mostrandoResultado || modoLecturaMemoria) && (tipo === "argumento" || valor === "ans")) || ((mostrandoResultado || modoLecturaMemoria) && tipo in keyMap["argumentos"])) {
+        } else if (((mostrandoResultado || modoLecturaMemoria) && (tipo === "argumento" || valor === "ans")) || ((mostrandoResultado || modoLecturaMemoria) && tipokey in keyMap["argumentos"])) {
             limpiarFormula();
             posicionMemoria = -1;
             manejarIndicadoresMemoria();
         }
         if (valor === "multiplicacion" || valor === "division") {
-            operacion += mapa[valor].back;
-            operacion_display += mapa[valor].front;
+            operacion_display += mapa[valor];
         } else if (valor === "ans") {
-            operacion += " "+mapa[valor]+" ";
             operacion_display += mapa[valor];
         } else {
-            operacion += mapa[valor];
             operacion_display += mapa[valor];
         }
         mostrandoResultado = false;
@@ -422,7 +383,7 @@ const manejarError = (error) => {
 
 const validarOperacion = (formula) => {
     const valoresAdmitidos = /^(Ans| Ans |e|pi|log|\(|\)|\.|[0-9]|\+|\-|×|\*|\/|÷)*$/;
-    if (!valoresAdmitidos.test(operacion) || !valoresAdmitidos.test(operacion_display)) {
+    if (!valoresAdmitidos.test(formula)) {
         throw new InvalidValueError();
     }
 }
@@ -499,11 +460,11 @@ const operar = (formulaMath) => {
         let formula = formulaMath;
         modoExponencial = false;
         validarOperacion(formula);
+        if (modoLecturaMemoria || mostrandoResultado)
+            return;
         formula = formula.replace(/Ans/g, " Ans ");
         formula = formula.replace(/×/g, "*");
         formula = formula.replace(/÷/g, "/");
-        if (modoLecturaMemoria || mostrandoResultado)
-            return;
         let result;
         result = math.evaluate(formula, {Ans: ans});
         result = math.format(result, { precision: 14 });
@@ -545,25 +506,29 @@ const clickFunction = (e) => {
     else if (dataValor === 'reset')
         resetear();
     else if (dataValor === 'operar' && !mostrandoError)
-        operar(operacion);
+        operar(operacion_display);
     else if (dataValor === 'off')
         apagar();
 }
 
 const keyDownFunction = (e) => {
     let tecla = e.key;
+
+    if (e.key === 'Enter') {
+        e.preventDefault();
+    }
     if (tecla in keyMap["argumentos"] && !mostrandoError) {
         document.querySelector(`[data-valor='${keyMap.argumentos[tecla]}']`).classList.add("button--active");
-        validarEntrada(keyMap.argumentos[tecla], tecla);
+        validarEntrada(keyMap.argumentos[tecla], undefined, tecla);
         gestionarDesborde();
         
     } else if (tecla in keyMap["operadores"] && !mostrandoError) {
         document.querySelector(`[data-valor='${keyMap.operadores[tecla]}']`).classList.add("button--active");
-        validarEntrada(keyMap.operadores[tecla], tecla);
+        validarEntrada(keyMap.operadores[tecla],undefined, tecla);
         gestionarDesborde();
     } else if (tecla === "Enter" && !mostrandoError) {
         document.querySelector("[data-valor='operar']").classList.add("button--active");
-        operar(operacion)
+        operar(operacion_display)
     } else if (tecla === "Backspace" && !mostrandoError && !mostrandoResultado) {
         document.querySelector("[data-valor='eliminar']").classList.add("button--active");
         eliminar();
@@ -619,6 +584,25 @@ const iniciarIntervalo = () => {
     ejecutarIntervalo();
 }
 
+const gestionarDesborde = () => {
+    resetDesborde();
+    if (operacion_display.toString().length > 13 && (mostrandoResultado || modoLecturaMemoria))
+        alinearIzquierda();
+    else if (operacion_display.toString().length > 13 && !mostrandoResultado && !modoLecturaMemoria)
+        alinearDerecha();
+    if (modoEdicion && desborde) {
+        if (posicionCursor > 13) {
+            $formula.style.marginRight = `-${(marginformula - 1)}ch`;
+            if (posicionCursor <= operacion_display.length - 1)
+                flechaRight.classList.add('mostrar');
+            alinearDerecha();
+        } else {
+            flechaIzq.classList.remove('mostrar');
+            alinearIzquierda();
+        }
+    }
+}
+
 const inicializarEdicion = (tecla) => {
     modoLecturaMemoria = false;
     mostrandoResultado = false;
@@ -636,39 +620,58 @@ const inicializarEdicion = (tecla) => {
     }
     
 }
-let marginformula = 0;
+
 
 const moverCursorIzquierda = () => {
-    // if (posicionCursor === operacion_display.length) {
-    //     console.log("entro asasdasa")
-    //     $formula.innerHTML = operacion_display;
-    //     posicionCursor--;
-    //     marginformula++;
-    //     caracterOriginal = operacion_display.charAt(posicionCursor);
-    //     mostrarGuionBajo = true;
-    // } else
+    console.log("posicioncursor: ", posicionCursor, "marginformula: ", marginformula, "modoedicion:" ,modoEdicion, "desborde: ", desborde);
+    gestionarDesborde();
     if (posicionCursor > 0) {
         $formula.innerHTML = operacion_display;
-        if (operacion_display[posicionCursor - 1] === 's')
+        if (operacion_display[posicionCursor] === 'A') {
+            if (operacion_display[posicionCursor - 1] === 's') {
+                posicionCursor -= 3;
+                if(desborde)
+                    marginformula += 3;
+            } else {
+                posicionCursor--;
+                if(desborde)
+                    marginformula += 3;
+            }
+        }   
+        else if (operacion_display[posicionCursor - 1] === 's') {
             posicionCursor -= 3;
-        else
+            if (desborde) {
+                marginformula++;
+            }
+        }
+        else{
             posicionCursor--;
-        marginformula++;
+            if(desborde)
+                marginformula++;
+        }
         caracterOriginal = operacion_display.charAt(posicionCursor);
         mostrarGuionBajo = true;
     }
     iniciarIntervalo();
     gestionarDesborde();
+    console.log("posicioncursor: ", posicionCursor, "marginformula: ", marginformula, "modoedicion:", modoEdicion, "desborde: ", desborde);
 }
 
 const moverCursorDerecha = () => {
     if (posicionCursor < operacion_display.length - 1) {
         $formula.innerHTML = operacion_display;
-        if (operacion_display[posicionCursor + 1] === 'n')
+        if (operacion_display[posicionCursor] === 'A') {
             posicionCursor += 3;
-        else
+            marginformula--;
+        }
+        else if (operacion_display[posicionCursor + 1] === 'A') {
             posicionCursor++;
-        marginformula--;
+            marginformula-=3;
+        }
+        else {
+            posicionCursor++;
+            marginformula--;
+        }
         caracterOriginal = operacion_display.charAt(posicionCursor);
         mostrarGuionBajo = true;
     } else if (posicionCursor === operacion_display.length - 1) {
@@ -690,6 +693,7 @@ const moverCursorDerecha = () => {
 
 const keyUpFunction = (e) => {
     let tecla = e.key;
+    // teclaPresionada[e.code] = false;
     if (tecla in keyMap["argumentos"])
         document.querySelector(`[data-valor='${keyMap.argumentos[tecla]}']`).classList.remove("button--active");
     else if (tecla in keyMap["operadores"])
@@ -761,49 +765,3 @@ document.addEventListener("keyup", keyUpFunction);
 document.addEventListener("mousedown", mouseDownFunction)
 document.addEventListener("mouseup", mouseUpFunction)
 
-
-
-
-
-
-
-// function isMobile() {
-//     const toMatch = [
-//         /Android/i,
-//         /webOS/i,
-//         /iPhone/i,
-//         /iPad/i,
-//         /iPod/i,
-//         /BlackBerry/i,
-//         /Windows Phone/i,
-//         /Opera Mini/i,
-//         /IEMobile/i
-//     ];
-
-//     return toMatch.some((toMatchItem) => {
-//         return navigator.userAgent.match(toMatchItem);
-//     });
-// }
-
-
-
-// if(isMobile()){
-//     flechas.addEventListener('touchstart', (e)=>{
-//         e.preventDefault();
-//         e.stopPropagation();
-//         if(e.target && e.target.tagName === 'BUTTON' ){
-//             direccionPress(e.target.getAttribute("data-flecha"));
-//             if(e.target.getAttribute("data-flecha") === 'left' || e.target.getAttribute("data-flecha") === 'right'){
-//                 // editarFormula(event.target.getAttribute("data-flecha"));
-//                 // Funcion que permite navegar sobre la formula, para editar o insertar nuevos elementos.
-//             }else if(e.target.getAttribute("data-flecha") === 'up' || e.target.getAttribute("data-flecha") === 'down'){
-//                 getMemoria(e.target.getAttribute("data-flecha"));
-//             }
-//         }
-//     });
-//     flechas.addEventListener('touchend', (e)=> {
-//         e.preventDefault();
-//         e.stopPropagation();
-//         direccionPress(e.target.getAttribute("data-flecha"))
-//     });
-// }
