@@ -406,6 +406,6 @@ body {
 .mostrar{
     opacity:1;
 }
-.ocultar{
+.pantalla--apagada >*{
     opacity:0;
 }
