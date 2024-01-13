@@ -135,16 +135,71 @@ const limpiarFormula = () => {
 
 const eliminar = () => {
     if (modoEdicion) {
-        if (operacion[posicionCursor] === "A") {
-            operacion = operacion.substring(0, posicionCursor) + operacion.substring(posicionCursor + 3);
-            marginformula -= 3;
+        if (posicionFormula > 13) {
+            if (operacion_display[posicionCursor] === "A") {
+                let operacionArray = Array.from(operacion);
+                operacionArray.splice(posicionFormula - 2, 3);
+
+                if (operacion[posicionFormula + 1] != "A") {
+                    operacion = operacionArray.join('');
+                    posicionFormula -= 2;
+                    if (posicionFormula < 13)
+                        posicionFormula = 13;
+                    operacion_display = operacion.substring(posicionFormula - 13, posicionFormula + 1);
+                    posicionCursor = operacion_display.length - 1;
+                    imprimirCursor(posicionCursor);
+                    reiniciarIntervalo();
+                    gestionarDesborde();
+                    console.log("fggffgfgfgfg")
+                    return;
+                }
+                operacion = operacionArray.join('');
+                operacion_display = operacion.substring(posicionFormula - 13, posicionFormula + 1);
+                console.log("eliminando A");
+                imprimirCursor(posicionCursor);
+                reiniciarIntervalo();
+            }
+            else {
+                let aux = operacion.split('');
+                aux.splice(posicionFormula, 1);
+                operacion = aux.join('');
+                operacion_display = operacion.substring(posicionFormula - 13, posicionFormula + 1);
+                imprimirCursor(posicionCursor);
+                reiniciarIntervalo();
+            }
         }
         else {
-            operacion = operacion.substring(0, posicionCursor) + operacion.substring(posicionCursor + 1);
-            marginformula--;
+            if (posicionFormula > 11 && operacion[posicionFormula + 1] === "A") {
+                operacion = operacion.substring(0, posicionFormula) + operacion.substring(posicionFormula + 1);
+                posicionFormula+=2
+                operacion_display = operacion.substring(posicionFormula - 13, posicionFormula + 1);
+                posicionCursor=operacion_display.length-3;
+                imprimirCursor(posicionCursor);
+                reiniciarIntervalo();
+                gestionarDesborde();
+                console.log("ppppppppppppppppp")
+                return;
+            }
+            else if (operacion_display[posicionCursor] === "A") {
+                let operacionArray = Array.from(operacion);
+                operacionArray.splice(posicionFormula, 3);
+                operacion = operacionArray.join('');
+                operacion_display = operacion.substring(0,14);
+                imprimirCursor(posicionCursor);
+                reiniciarIntervalo();
+                console.log("eliminando b");
+            }
+            else {
+                operacion = operacion.substring(0, posicionFormula) + operacion.substring(posicionFormula + 1);
+                operacion_display = operacion.substring(0, 14);
+                imprimirCursor(posicionCursor);
+                reiniciarIntervalo();
+                console.log("eliminando c");
+            }
         }
-        $formula.innerHTML = operacion;
-        if (posicionCursor === operacion.length) {
+        
+        
+        if (posicionFormula === operacion.length) {
             salirModoEdicion();
         }
     } else {
@@ -152,8 +207,13 @@ const eliminar = () => {
             operacion = operacion.slice(0, -3)
         else
             operacion = operacion.slice(0, -1)
-        operacion_display = operacion.substring(operacion.length - 13)+" ";
+        operacion_display = operacion.substring(operacion.length - 13) + " ";
         posicionCursor = operacion_display.length - 1;
+        if (posicionFormula - 1 < 13)
+            posicionFormula = posicionCursor;
+        else
+            posicionFormula--;
+        imprimirCursor(posicionCursor);
         reiniciarIntervalo();
     }
     gestionarDesborde();
@@ -161,9 +221,9 @@ const eliminar = () => {
 
 const salirModoEdicion = () => {
     modoEdicion = false;
-    operacion_display = operacion+" ";
+    operacion_display = operacion + " ";
+    operacion_display_cursor = operacion + "_";
     posicionCursor = operacion_display.length - 1;
-    //iniciarIntervalo();
 }
 
 function resetear() {
@@ -278,18 +338,35 @@ const manejarDownClick = () => {
 
 
 const editarOperacion = (valor) => { 
-    if (valor === "multiplicacion" || valor === "division") {
-        operacion = operacion.substring(0, posicionCursor) + mapa[valor].front + operacion.substring(posicionCursor + 1);
-    } else if (valor === "ans") {
+    if (valor === "ans") {
+        if (operacion[posicionFormula] === "A") {
+            moverCursorDerecha();
+            gestionarDesborde();
+            return;
+        }
         operacion = operacion.substring(0, posicionCursor) + mapa[valor] + operacion.substring(posicionCursor + 1);
-    } else { 
-        operacion = operacion.substring(0, posicionCursor) + mapa[valor] + operacion.substring(posicionCursor + 1);
-
+        gestionarDesborde();
+        if (desborde)
+            operacion_display = operacion.substring(operacion.length - 14, operacion.length);
+        else
+            operacion_display = operacion;
+        
+    } else {
+        if (operacion[posicionFormula] === "A")
+            operacion = operacion.substring(0, posicionCursor) + mapa[valor] + operacion.substring(posicionCursor + 3);
+        else
+            operacion = operacion.substring(0, posicionCursor) + mapa[valor] + operacion.substring(posicionCursor + 1);
+        gestionarDesborde();
+        if (desborde)
+            operacion_display = operacion.substring(operacion.length - 14, operacion.length);
+        else
+            operacion_display = operacion;
     }
     moverCursorDerecha();
+    gestionarDesborde();
 }
 
-let indice = 0, operacion_display=' ';
+let operacion_display=' ';
 
 
 const gestionarOperacionSobreResultado = (valor, tipo, tipokey) => {
@@ -304,18 +381,21 @@ const gestionarOperacionSobreResultado = (valor, tipo, tipokey) => {
     }
 }
 
+let operacion_display_cursor="_";
 
 const setFormulaVisible = () => { 
     if (desborde) {
         if (modoEdicion) {
             operacion_display = operacion.trimEnd();
-            operacion_display = operacion_display.substring(operacion_display.length - 14 - indice, operacion_display.length - indice);
+            operacion_display = operacion_display.substring(operacion_display.length - 14, operacion_display.length);
         } else {
-            operacion_display = operacion.substring(operacion.length - 13)+" ";
-            posicionCursor = operacion_display.length - 1;
+            operacion_display = operacion.substring(operacion.length - 13) + " ";
+            operacion_display_cursor = operacion.substring(operacion.length - 13) + "_";
+            //posicionCursor = operacion_display.length - 1;
         }
     } else {
-        operacion_display = operacion+" ";
+        operacion_display = operacion + " ";
+        operacion_display_cursor = operacion + "_";
         posicionCursor = operacion_display.length - 1;
     }
     reiniciarIntervalo();
@@ -324,11 +404,8 @@ const setFormulaVisible = () => {
 const setFormula = (valor, tipo, tipokey) => {
 
     gestionarOperacionSobreResultado(valor, tipo, tipokey);
-    if (modoEdicion) {
-        operacion += mapa[valor];
-    } else {
-        operacion += mapa[valor];
-    }
+    operacion += mapa[valor];
+    posicionFormula = operacion.length;
     gestionarDesborde();
     setFormulaVisible();
     mostrandoResultado = false;
@@ -339,9 +416,9 @@ const validarEntrada = (valor, tipo, tipokey) => {
     if (valor in mapa) {
         if (modoEdicion) {
             editarOperacion(valor);
-            return;
+        } else {
+            setFormula(valor, tipo, tipokey);
         }
-        setFormula(valor, tipo, tipokey);
     } else
         console.error("Haz modificado el mapa de valores");
 }
@@ -437,7 +514,7 @@ const analizarResultado = (result) => {
     ans = resultado;
 }
 const establecerFormula = () => {
-    operacion_display = operacion.substring(operacion.length - 14 - indice, operacion.length - indice);
+    operacion_display = operacion.substring(operacion.length - 14, operacion.length);
 }
 const operar = () => {
     try {
@@ -531,7 +608,8 @@ const keyDownFunction = (e) => {
 
 const ejecutarIntervalo = () => {
     if (mostrarGuionBajo) {
-        $formula.innerHTML = operacion_display.substring(0, posicionCursor) + '_' + operacion_display.substring(posicionCursor + 1);
+        $formula.innerHTML = operacion_display_cursor;
+        //$formula.innerHTML = operacion_display.substring(0, posicionCursor) + '_' + operacion_display.substring(posicionCursor + 1);
     } else {
         $formula.innerHTML = operacion_display;
     }
@@ -565,45 +643,127 @@ const gestionarDesborde = () => {
     } else {
         desborde = false;
     }
-    if ((mostrandoResultado || modoLecturaMemoria) && desborde) {
+    if ((mostrandoResultado || modoLecturaMemoria || modoEdicion) && desborde) {
         flechaRight.classList.add('mostrar');
-    } else if (desborde){
+    }
+    if (desborde && posicionFormula > 13 && !mostrandoResultado && !modoLecturaMemoria) {
         flechaIzq.classList.add('mostrar');
     }
 }
 
-
+let posicionFormula = 0;
 
 const inicializarEdicion = (tecla) => {
     modoLecturaMemoria = false;
     mostrandoResultado = false;
     modoEdicion = true;
-    operacion = operacion.trimEnd();
-    //operacion_display = operacion.substring(operacion.length - 14);
     if (tecla === "ArrowLeft" || tecla === "left") {
-        posicionCursor = operacion.length;
-        operacion_display = operacion.substring(posicionCursor - 14, posicionCursor);
+        operacion_display = operacion.substring(operacion.length - 14);
+        posicionFormula = operacion.length;
+        posicionCursor = operacion_display.length;
     }
     else if (tecla === "ArrowRight" || tecla === "right") {
         posicionCursor = 0;
+        posicionFormula = 13;
     }
     
 }
 
-
+const imprimirCursor = (posicion) => { 
+    operacion_display_cursor = operacion_display.split("")
+    operacion_display_cursor[posicion] = "_";
+    operacion_display_cursor = operacion_display_cursor.join("");
+}
 
 const moverCursorIzquierda = (tecla) => {
-    if (!modoEdicion) {
+    if (operacion.length === 0) {
+        reiniciarIntervalo()
+        console.log("no hay hacia donde moverse");
+        return;
+    }
+    if (!modoEdicion)
         inicializarEdicion(tecla)
+    if (posicionCursor === 0) { 
+        reiniciarIntervalo();
+        console.log("no se puede mover mas a la izquierda");
+        return;
     }
-    if (posicionCursor > 0) {
-        if(desborde)
-            indice++;
+    if (!desborde) {
         if (operacion_display[posicionCursor - 1] === 's')
-            posicionCursor -= 3;
-        else
+            posicionCursor -= 3
+        else {
             posicionCursor--;
+        }
+        posicionFormula = posicionCursor;
+        operacion_display = operacion;
+        console.log("ñññññññññññ")
+        imprimirCursor(posicionCursor);
     }
+    else if (posicionFormula > 13) {
+        if (operacion_display[posicionCursor - 1] === 's' && operacion_display[posicionCursor] != 'A') {
+            posicionFormula--
+            posicionCursor = operacion_display.length - 3;
+
+        }
+        else if (operacion_display[posicionCursor] === "A" && operacion_display[posicionCursor - 1] === "s") {
+            posicionFormula -= 3
+            if (posicionFormula < 13) {
+                let diferencia = 13 - posicionFormula;
+                posicionCursor = operacion_display.length - 3 - diferencia;
+                posicionFormula = posicionCursor;
+                operacion_display = operacion.substring(0, 14);
+                imprimirCursor(posicionCursor);
+                console.log("curs:", posicionCursor, "form: ", posicionFormula, operacion_display, operacion_display_cursor);
+                reiniciarIntervalo();
+                gestionarDesborde();
+                return;
+            }
+            else {
+                posicionCursor = operacion_display.length - 3;
+            }
+        }
+        else if (operacion_display[posicionCursor] === "A" && operacion_display[posicionCursor - 1] != "s") {
+            if (posicionFormula - 3 < 13) {
+                let diferencia = posicionFormula - 13;
+                if (diferencia === 2) {
+                    posicionCursor = operacion_display.length - 2;
+                } else if (diferencia === 1) { 
+                    posicionCursor = operacion_display.length - 3;
+                }
+                posicionFormula = posicionCursor;
+                console.log("ooooooooooooooooooooo")
+                operacion_display = operacion.substring(0, 14);
+                imprimirCursor(posicionCursor);
+                reiniciarIntervalo();
+                gestionarDesborde();
+                return;
+            }
+            else {
+                posicionFormula -= 3;
+                posicionCursor = operacion_display.length - 1;
+                console.log("zzzzzzzzzzzz")
+            }
+            }
+        else {
+            posicionFormula--;
+            posicionCursor = operacion_display.length - 1;
+        }
+        operacion_display= operacion.substring(posicionFormula - 13, posicionFormula + 1);
+        imprimirCursor(posicionCursor);
+    } else {
+        if (operacion_display[posicionCursor - 1] === 's') {
+            posicionCursor -= 3
+            posicionFormula=posicionCursor
+        }
+        else {
+            posicionCursor--;
+            posicionFormula=posicionCursor
+        }
+        operacion_display = operacion.substring(0,14);
+        imprimirCursor(posicionCursor);
+    }
+    
+    console.log("curs:",posicionCursor, "form: ",posicionFormula, operacion_display, operacion_display_cursor);
     reiniciarIntervalo();
     gestionarDesborde();
 }
@@ -612,17 +772,121 @@ const moverCursorIzquierda = (tecla) => {
 
 
 const moverCursorDerecha = (tecla) => {
+    if ((posicionCursor === operacion_display.length - 1 || (posicionCursor=== operacion_display.length - 3 && operacion_display[posicionCursor] === "A"))  && modoEdicion && !desborde) { 
+        modoEdicion = false;
+        operacion_display = operacion + " ";
+        operacion_display_cursor = operacion + "_";
+        posicionCursor = operacion_display.length - 1;
+        reiniciarIntervalo();
+        console.log("saliendo modo edicion");
+        gestionarDesborde();
+        return;
+    }
+    if ((posicionFormula === operacion.length - 1 || (posicionFormula=== operacion.length-3 && operacion[posicionFormula] === "A")) && modoEdicion && desborde) {
+        modoEdicion = false;
+        operacion_display = operacion.substring(operacion.length - 13) + " ";
+        posicionCursor = operacion_display.length - 1;
+        imprimirCursor(posicionCursor);
+        reiniciarIntervalo();
+        console.log("saliendo modo edicion");
+        gestionarDesborde();
+        return;
+    }
+    if ((posicionCursor === operacion_display.length - 1 || posicionFormula === operacion.length - 1) && !modoEdicion) {
+        reiniciarIntervalo();
+        console.log("no se puede mover mas a la derecha");
+        return;
+    }
     if (!modoEdicion && (mostrandoResultado || modoLecturaMemoria)) {
         inicializarEdicion(tecla);
+        console.log("inicializando modo edicion desde la izquierda");
+        operacion_display = operacion.substring(0, 14);
+        imprimirCursor(posicionCursor);
     }
-    if (posicionCursor < operacion.length - 1 && modoEdicion) {
-        if (operacion_display[posicionCursor] === 'A')
-            posicionCursor += 3;
-        else
+    else if (!desborde) {
+        if (operacion_display[posicionCursor + 1] === 'n'|| operacion_display[posicionCursor] === 'A')
+            posicionCursor += 3
+        else {
             posicionCursor++;
-    } else if(modoEdicion){
-        salirModoEdicion();
+        }
+        posicionFormula = posicionCursor;
+        console.log("23232323")
+        operacion_display = operacion;
+        imprimirCursor(posicionCursor);
     }
+    else if (posicionFormula >= 13) {
+        if (operacion[posicionFormula + 1] === 'A') {
+            posicionFormula += 3
+            posicionCursor = operacion_display.length - 3;
+        }
+        else if ((operacion_display[posicionCursor + 1] === 'n' || operacion[posicionFormula + 1] === 'n') && operacion[posicionFormula+3] === 'A') {
+            posicionFormula += 3
+            posicionCursor = operacion_display.length - 3;
+            
+        }
+        else if ((operacion_display[posicionCursor + 1] === 'n' || operacion[posicionFormula + 1] === 'n') && operacion[posicionFormula + 3] != 'A') {
+            posicionFormula ++
+            posicionCursor = operacion_display.length - 1;
+        }
+        else if (operacion_display[posicionCursor + 1] === 'n' || operacion[posicionFormula+1]=== 'n') {
+            posicionFormula += 3
+            posicionCursor = operacion_display.length - 1;
+        }
+        else {
+            posicionFormula++;
+            posicionCursor = operacion_display.length - 1;
+        }
+        //posicionCursor = operacion_display.length - 1;
+        operacion_display = operacion.substring(posicionFormula - 13, posicionFormula + 1);
+        imprimirCursor(posicionCursor);
+    }
+    else {
+        if (operacion_display[posicionCursor + 1] === 'A' && posicionFormula+3 >13) {
+            console.log("lllllllllll")
+            posicionFormula = posicionCursor + 3;
+            posicionCursor = operacion_display.length - 3;
+            operacion_display = operacion.substring(posicionFormula - 13, posicionFormula + 1);
+            imprimirCursor(posicionCursor);
+            //return;
+        }
+        else if ((operacion_display[posicionCursor] === 'A' || operacion[posicionFormula] === 'A') && posicionFormula === operacion_display.length-3) {
+            posicionFormula = 14;
+            console.log("zzzzzzzzzz ");
+            posicionCursor = operacion_display.length - 1;
+            operacion_display = operacion.substring(posicionFormula - 13, posicionFormula + 1);
+            imprimirCursor(posicionCursor);
+        }
+        else if ((operacion_display[posicionCursor + 1] === 'n' || operacion[posicionFormula + 1] === 'n') && posicionCursor+3 === 12 && operacion_display[posicionCursor+3] === 'A') {
+            posicionFormula = 14;
+            posicionCursor = operacion_display.length - 3;
+            console.log("dfdfdfdfdfdfd");
+            operacion_display = operacion.substring(posicionFormula - 13, posicionFormula + 1);
+            imprimirCursor(posicionCursor);
+        }
+        else if ((operacion_display[posicionCursor + 1] === 'n' || operacion[posicionFormula + 1] === 'n') && posicionCursor + 3 === 13 && operacion_display[posicionCursor + 3] === 'A') {
+            posicionFormula = 15;
+            posicionCursor = operacion_display.length - 3;
+            console.log("ooooooooooooo");
+            operacion_display = operacion.substring(posicionFormula - 13, posicionFormula + 1);
+            imprimirCursor(posicionCursor);
+        }
+        else if (operacion_display[posicionCursor + 1] === 'n' || operacion[posicionFormula + 1] === 'n') {
+            posicionCursor += 3
+            posicionFormula += 3
+            operacion_display = operacion.substring(0, 14);
+            imprimirCursor(posicionCursor);
+        }
+        else {
+            posicionCursor++;
+            posicionFormula++;
+            operacion_display = operacion.substring(0, 14);
+            imprimirCursor(posicionCursor);
+        }
+        // operacion_display = operacion.substring(0, 14);
+        // imprimirCursor(posicionCursor);
+    }
+
+    console.log("curs:", posicionCursor, "form: ", posicionFormula, operacion_display, operacion_display_cursor);
     reiniciarIntervalo();
     gestionarDesborde();
 }
