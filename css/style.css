@@ -1,6 +1,3 @@
-/*
-Practicas Html/CSS/Javascript - Erik Medina
-*/
 
 *{
 	margin: 0;
@@ -41,39 +38,29 @@ body {
 	padding: 20px;
     width:300px;
 	border-radius: 20px;
-    background-image: url("../img/metal-textura.jpg");
+    /* background-image: url("../img/metal-textura.jpg"); */
     background-repeat: no-repeat;
     background-position: top center;
-    background-color: #cfcfcf; 
-    border-left: 5px solid #696768;
-    border-right: 5px solid #696768;
-    border-top: 2px solid #696768;
-    border-bottom: 2px solid #696768;
+    background-color: #cfcfcf;
+    border: solid #696768;
+    border-width: 2px 5px;
 	box-shadow: 15px 10px 25px 0px #000000b3,inset 0px 60px 8px -50px #646464e6,
     inset 0px -56px 8px -50px #ffffffb3,
     inset 0px -70px 8px -50px #646464cc;
 }
-.calculadora::before{
+.calculadora::after, .calculadora::before{
     content:"";
     position:absolute;
     width:100%;
     left:0px;
-    top:15px;
-    height:1px;
-    background-color: #ffffff80;
-    box-shadow: 0px 0px 5px 2px #ffffffb3;
-}
-.calculadora::after{
-    content:"";
-    position:absolute;
-    width:100%;
-    left:0px;
-    bottom:25px;
     height:1px;
     background-color: rgba(255, 255, 255, 0.3);
     box-shadow: 0px 0px 5px 2px rgba(255, 255, 255, 0.5);
 }
-.logotipo{
+.calculadora::before {top:15px;}
+.calculadora::after {bottom:25px;}
+
+.header{
     display:grid;
     width:100%;
     grid-template-columns: 1fr 1fr 1fr;
@@ -82,21 +69,12 @@ body {
     justify-items: center;
     align-items: center;
 }
-.logotipo span{
-    text-shadow: #ffffff .8px .8px .5px;
-}
-.marca{
-    font-family: eurostar;
-    font-size: 14px;
-}
-.modelo{
-    font-weight: bold;
-    font-family: serif;
-}
-.fotocelda{
+.header__brand {text-shadow: #ffffff .8px .8px .5px; font-family: eurostar; font-size: 14px;}
+.header__model {font-weight: bold; font-family: serif;}
+
+.header__cell{
     width: 100%;
     display:flex;
-    align-content: center;
     align-items: center;
     justify-content: space-evenly;
     height: 30px;
@@ -105,12 +83,13 @@ body {
     border-radius: 3px;
     box-shadow: 1.5px 1.5px 1px .5px #FFFFFF;
 }
-.fotocelda::before, .fotocelda::after{
+.header__cell::before, .header__cell::after{
     content:'';
     height:100%;
     width:2px;
     background-color: #1f1511;
 }
+
 .pantalla{
     background-color: #c2e0e0;
     width:225px;
@@ -119,9 +98,7 @@ body {
     margin-bottom:60px;
     border: 5px inset #DFDDDC;
 }
-/* .ocultar > *{
-    opacity: 0;
-} */
+
 .formula, .blink, .contenedorFormula{
     font-family: ericsson;
     font-size: 1.3rem;
@@ -133,21 +110,7 @@ body {
     margin-left:.8px;
     white-space: pre;
 }
-.formula--alignEnd{
-    justify-content: flex-end;
-}
-.formula--alignStart{
-    justify-content: flex-start;
-}
 
-.blink {
-    animation: parpadeo .8s steps(1) infinite;
-}
-
-@keyframes parpadeo {
-    0% { visibility: visible; }
-    60% { visibility: hidden; }
-}
 .pantalla #resultado{
     --opacityValue: .06;
     font-family: ds-digital;
@@ -171,19 +134,10 @@ body {
     justify-content: center;
 }
 
-.flechaUp, .flechaDown, .flechaRight, .flechaIzq{
-    position: absolute;
-    opacity:.1;
-}
-.flechaUp{
-    top:-10px;
-}
-.flechaRight, .flechaIzq{
-    bottom:0px;
-}
-.flechaDown{
-    top:-1px;
-}
+.flechaUp, .flechaDown, .flechaRight, .flechaIzq {position: absolute; opacity:.1;}
+.flechaUp {top:-10px;}
+.flechaRight, .flechaIzq {bottom:0px;}
+.flechaDown {top:-1px;}
 
 .lineaSup{
     display:grid;
@@ -191,10 +145,8 @@ body {
     height:20px;
     grid-gap: 3px;
 }
-.lineaInf{
-    display: grid;
-    grid-template-columns: 1fr 30px;
-}
+.lineaInf{display: grid; grid-template-columns: 1fr 30px;}
+
 .contenedorFormula{
     --opacityValue2:.06;
     position:relative;
@@ -223,9 +175,7 @@ body {
     padding-bottom: 2px;
     font-weight: bold;
 }
-.base--visible{
-    opacity:1;
-}
+.base--visible {opacity:1;}
 
 .exponente{
     font-size: 14px;
@@ -325,17 +275,9 @@ body {
     text-shadow: #ffffff .8px .8px 1px;
     cursor: pointer;
 }
-.button:focus-visible{
-    outline: none;
-}
-.button--dark{
-    height:73px;
-    background-color:#7c6b5c;
-}
-.button--red{
-    background-color: #cb4718;
-    text-shadow: #ffffffb6 .5px .5px 1px;
-}
+.button:focus-visible {outline: none;}
+.button--dark {height:73px; background-color:#7c6b5c;}
+.button--red {background-color: #cb4718; text-shadow: #ffffffb6 .5px .5px 1px;}
 
 
 .button:active{
@@ -396,16 +338,6 @@ body {
     cursor:pointer;
     text-shadow: #ffffff 0.8px 0.8px 1px;
 }
-/* .credito{
-    position:absolute;
-    bottom:5px;
-    left:5px;
-    color: #000;
-    font-size: 11px;
-} */
-.mostrar{
-    opacity:1;
-}
-.pantalla--apagada >*{
-    opacity:0;
-}
+
+.mostrar {opacity:1;}
+.pantalla--apagada >* {opacity:0;}
