@@ -31,23 +31,33 @@ class MathError extends Error {
 }
 
 //valores constantes
-const ENTEROMAX = 9.999999999e+99, ENTEROMIN = -ENTEROMAX, DECIMALMINPOSITIVO = 1e-99, DECIMALMINNEGATIVO = -DECIMALMINPOSITIVO, ESPACIO_MEMORIA=8;
+const ENTERO_MAX = 9.999999999e+99;
+const ENTERO_MIN = - ENTERO_MAX;
+const DECIMALMINPOSITIVO = 1e-99;
+const DECIMALMINNEGATIVO = -DECIMALMINPOSITIVO;
+const ESPACIO_MEMORIA = 8;
 
 //modos - estados
-let modoExponencial = false, mostrandoError = false, mostrandoResultado = false, modoLecturaMemoria = false, modoEdicion = false, desborde = false, presionandoDireccional = false;
+let modoExponencial = false;
+let mostrandoError = false;
+let mostrandoResultado = false;
+let modoLecturaMemoria = false;
+let modoEdicion = false;
+let desborde = false;
+let presionandoDireccional = false;
 
 //variables
 let exponente, coeficiente, resultado=0;
-let operacion = "", ans = 0;
-let posicionMemoria = -1, posicionCursor = 0;
+let operacion = "";
+let operacion_display = ' ';
+let operacion_display_cursor = "_";
+let ans = 0;
+let posicionMemoria = -1;
+let posicionCursor = 0;
 let posicionFormula = 0;
-
 let mostrarGuionBajo = true;
 let intervalId;
 let tiempoIntervalo = 500;
-let marginformula = 0;
-let operacion_display = ' ';
-let operacion_display_cursor = "_";
 
 
     
@@ -387,10 +397,8 @@ const leerMemoria = () => {
 
 
 const manejarUpClick = () => { 
-    if (posicionMemoria === -1 && mostrandoResultado) {
-        posicionMemoria = memoriaOperaciones.length - 2;
-    } else if (posicionMemoria === -1 && memoriaOperaciones.length) {
-        posicionMemoria = memoriaOperaciones.length - 1;
+    if (posicionMemoria === -1) {
+        posicionMemoria = memoriaOperaciones.length - (mostrandoResultado ? 2 : 1);
     } else if (posicionMemoria > 0) {
         posicionMemoria--;
     } 
@@ -428,7 +436,7 @@ const editarOperacion = (valor) => {
         gestionarDesborde();
         
         if (desborde) {
-           let posicionForm;
+            let posicionForm;
             if (posicionCursor > 11) {
                 let diferencia = 13 - posicionCursor;
                 posicionFormula += 2;
@@ -515,12 +523,6 @@ const validarEntrada = (valor, tipo, tipokey) => {
 }
 
 
-
-
-
-
-
-
 const notacionExponencial = (result) => { 
     if (Number.isInteger(result)) {
         result = math.format(result, { notation: 'exponential', precision:11 })
@@ -538,11 +540,8 @@ const notacionExponencial = (result) => {
 }
 
 
-
-
-
 const analizarResultado = (result) => {
-    if (result > ENTEROMAX || result < ENTEROMIN || isNaN(result)) {
+    if (result > ENTERO_MAX || result < ENTERO_MIN || isNaN(result)) {
         throw new MathError();
     }
     isExponencial(result);
