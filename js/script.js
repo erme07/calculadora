@@ -1,6 +1,4 @@
-/*
-Practicas Html/CSS/Javascript - Erik Medina
-*/
+
 const teclado = document.getElementById('teclado'),
     $formula = document.querySelector(".formula"),
     $pantalla = document.querySelector(".pantalla"),
