@@ -39,5 +39,5 @@ La idea es conseguir una representación realista, emulando las funcionalidades 
 
 ## Creditos
 
-This project uses the [MathJS](https://github.com/josdejong/mathjs) library to manage the color picker function.
+Este proyecto utiliza la libreria [MathJS](https://github.com/josdejong/mathjs).
 
