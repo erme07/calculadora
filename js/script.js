@@ -253,10 +253,18 @@ const resetear = () => {
 const apagar = () => {
     if (isMobile()) {
         document.removeEventListener("touchstart", touchStartFunction);
+        document.removeEventListener("touchend", touchEndFunction);
+        setTimeout(() => { 
+            document.querySelector("[data-valor='off']").classList.remove("button--active")
+        }, 100);
+
+        
     } else {
         document.removeEventListener("keydown", keyDownFunction);
         document.removeEventListener("keyup", keyUpFunction);
         document.removeEventListener("click", clickFunction);
+        document.removeEventListener("mousedown", mouseDownFunction)
+        document.removeEventListener("mouseup", mouseUpFunction)
     }
     resetear();
     reiniciarMemoria();
@@ -268,10 +276,13 @@ const apagar = () => {
 const encender = () => {
     if (isMobile()) {
         document.addEventListener("touchstart", touchStartFunction);
+        document.addEventListener("touchend", touchEndFunction);
     } else {
         document.addEventListener("keydown", keyDownFunction);
         document.addEventListener("keyup", keyUpFunction);
         document.addEventListener("click", clickFunction);
+        document.addEventListener("mousedown", mouseDownFunction)
+        document.addEventListener("mouseup", mouseUpFunction)
     }
     reiniciarMemoria();
     $resultado.innerHTML='0';
@@ -988,7 +999,7 @@ const touchStartFunction = (e) => {
     mouseDownFunction(e);
     clickFunction(e);
 }
-const touchendFunction = (e) => {
+const touchEndFunction = (e) => {
     let elemento = e.target;
     if (elemento.matches(".button"))
         elemento.classList.remove("button--active");
@@ -999,9 +1010,10 @@ ejecutarIntervalo();
 
 if (isMobile()) {
     document.addEventListener("touchstart", touchStartFunction)
-    document.addEventListener("touchend", touchendFunction)
+    document.addEventListener("touchend", touchEndFunction)
     $on.addEventListener("touchstart", encender);
 } else {
+    alert("prueba")
     document.addEventListener("click", clickFunction)
     $on.addEventListener("click", encender);
     document.addEventListener("keydown", keyDownFunction);
