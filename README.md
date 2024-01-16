@@ -9,10 +9,10 @@ La idea es conseguir una representación realista, emulando las funcionalidades 
 
 ## :heavy_check_mark: Características:
 
-- Matemótica
+- Matemática
     - Resolución de operaciones mediante una expresión matemática
-    - No hay límite para la longitud de la expresiín a resolver. ( Solo en el número respresentable como resultado)
-    - Admite el uso de parentesis para agrupar operaciones.
+    - No hay límite para la longitud de la expresión a resolver. ( Solo en el número respresentable como resultado)
+    - Admite el uso de paréntesis para agrupar operaciones.
     - Acepta las formas alternativas o abreviadas al escribir ciertas expresiones matemáticas ej. 5*(2+2) => 5(2+2).
     - Representa valores en notación científica/exponencial.
 - Funcionalidades
@@ -29,9 +29,15 @@ La idea es conseguir una representación realista, emulando las funcionalidades 
     - Estilos dinámicos para los botones
     - Flechas en pantalla indican la navegabilidad en la expresión y en las operaciones guardadas en memoria
     - Puede apagarse y encenderse.
-
-
+- Pendientes
+    - [ ] Logaritmos
+    - [ ] Potencias
+    - [ ] Raices
 
 ## :framed_picture: Captura:
 ![Calculadora](Preview.jpg)
+
+## Creditos
+
+This project uses the [MathJS](https://github.com/josdejong/mathjs) library to manage the color picker function.
 
