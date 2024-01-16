@@ -45,6 +45,9 @@ let modoLecturaMemoria = false;
 let modoEdicion = false;
 let desborde = false;
 let presionandoDireccional = false;
+let tipoMobile;
+
+
 
 //variables
 let exponente, coeficiente, resultado=0;
@@ -105,6 +108,13 @@ const mapa = Object.freeze({
     nueve: "9",
     cero: "0"
 })
+
+
+const isMobile = () => {
+    const toMatch = /Android|webOS|iPhone|iPad|iPod|BlackBerry|Windows Phone|Opera Mini|IEMobile/i;
+    return toMatch.test(navigator.userAgent);
+}
+tipoMobile = isMobile();
 
 const manejarIndicadoresMemoria = () => {
     flechaDown.classList.add("mostrar");
@@ -240,10 +250,14 @@ const resetear = () => {
     reiniciarIntervalo();
 }
 
-const apagar = () =>{
-    document.removeEventListener("keydown", keyDownFunction);
-    document.removeEventListener("keyup", keyUpFunction);
-    document.removeEventListener("click", clickFunction);
+const apagar = () => {
+    if (isMobile()) {
+        document.removeEventListener("touchstart", touchStartFunction);
+    } else {
+        document.removeEventListener("keydown", keyDownFunction);
+        document.removeEventListener("keyup", keyUpFunction);
+        document.removeEventListener("click", clickFunction);
+    }
     resetear();
     reiniciarMemoria();
     $resultado.innerHTML='';
@@ -252,13 +266,18 @@ const apagar = () =>{
 }
 
 const encender = () => {
-    document.addEventListener("keydown", keyDownFunction);
-    document.addEventListener("keyup", keyUpFunction);
-    document.addEventListener("click", clickFunction);
+    if (isMobile()) {
+        document.addEventListener("touchstart", touchStartFunction);
+    } else {
+        document.addEventListener("keydown", keyDownFunction);
+        document.addEventListener("keyup", keyUpFunction);
+        document.addEventListener("click", clickFunction);
+    }
     reiniciarMemoria();
     $resultado.innerHTML='0';
     limpiarFormula();
     $pantalla.classList.remove("pantalla--apagada");
+    reiniciarIntervalo();
     gestionarDesborde();
 }
 
@@ -961,11 +980,31 @@ const mouseUpFunction = (e) => {
     }
 }
 
-ejecutarIntervalo();
-document.addEventListener("click", clickFunction)
-$on.addEventListener("click", encender);
-document.addEventListener("keydown", keyDownFunction);
-document.addEventListener("keyup", keyUpFunction);
-document.addEventListener("mousedown", mouseDownFunction)
-document.addEventListener("mouseup", mouseUpFunction)
+const touchStartFunction = (e) => {
+    let elemento = e.target;
+    if (elemento.matches("button"))
+        elemento.classList.add("button--active");
+    mouseDownFunction(e);
+    clickFunction(e);
+}
+const touchendFunction = (e) => {
+    let elemento = e.target;
+    if (elemento.matches("button"))
+        elemento.classList.remove("button--active");
+    mouseUpFunction(e);
+}
 
+ejecutarIntervalo();
+
+if (isMobile()) {
+    document.addEventListener("touchstart", touchStartFunction)
+    document.addEventListener("touchend", touchendFunction)
+    $on.addEventListener("touchstart", encender);
+} else {
+    document.addEventListener("click", clickFunction)
+    $on.addEventListener("click", encender);
+    document.addEventListener("keydown", keyDownFunction);
+    document.addEventListener("keyup", keyUpFunction);
+    document.addEventListener("mousedown", mouseDownFunction)
+    document.addEventListener("mouseup", mouseUpFunction)
+}
