@@ -1012,12 +1012,13 @@ if (isMobile()) {
     document.addEventListener("touchstart", touchStartFunction)
     document.addEventListener("touchend", touchEndFunction)
     $on.addEventListener("touchstart", encender);
+    document.body.classList.remove('noTactil');
 } else {
-    alert("prueba")
     document.addEventListener("click", clickFunction)
     $on.addEventListener("click", encender);
     document.addEventListener("keydown", keyDownFunction);
     document.addEventListener("keyup", keyUpFunction);
     document.addEventListener("mousedown", mouseDownFunction)
     document.addEventListener("mouseup", mouseUpFunction)
+    document.body.classList.add('noTactil');
 }

@@ -280,12 +280,12 @@ body {
 .button--red {background-color: #cb4718; text-shadow: #ffffffb6 .5px .5px 1px;}
 
 /* Estilos para :active que se aplicarán en dispositivos no móviles */
-/* @media (hover: hover) {
-    .button:active{
+
+.noTactil .button:active{
         box-shadow: inset 3px 3px 3px -2px rgba(34, 34, 34, 0.9),
         inset -3px -3px 3px -2px rgba(34,34,34,0.9)!important;
     }
-} */
+
 
 .button--active{
     box-shadow: inset 3px 3px 3px -2px rgba(34, 34, 34, 0.9),
