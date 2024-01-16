@@ -982,14 +982,15 @@ const mouseUpFunction = (e) => {
 
 const touchStartFunction = (e) => {
     let elemento = e.target;
-    if (elemento.matches("button"))
+    e.preventDefault();
+    if (elemento.matches(".button"))
         elemento.classList.add("button--active");
     mouseDownFunction(e);
     clickFunction(e);
 }
 const touchendFunction = (e) => {
     let elemento = e.target;
-    if (elemento.matches("button"))
+    if (elemento.matches(".button"))
         elemento.classList.remove("button--active");
     mouseUpFunction(e);
 }
